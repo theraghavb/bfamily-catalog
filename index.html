@@ -875,7 +875,7 @@ function exportPDF() {
     : currentFilter;
 
   const cards = filtered.map((it, i) => {
-    const img = it.image_url ? '<img src="' + it.image_url + '" crossorigin="anonymous">' : '<div class="no-img">No photo</div>';
+    const img = it.image_url ? '<img src="' + it.image_url + '">' : '<div class="no-img">No photo</div>';
     const dec = it.decision && it.decision !== 'undecided' ? '<span class="tag">' + it.decision + '</span>' : '';
     const loc = it.location ? '<span class="tag">' + it.location.toUpperCase() + '</span>' : '';
     const ant = it.is_antique ? '<span class="tag antique">Antique</span>' : '';
