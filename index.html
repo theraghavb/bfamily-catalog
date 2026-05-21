@@ -656,22 +656,7 @@ function openDetail(id) {
   document.getElementById('sheetFormBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Name</label><input class="sheet-input" id="e-name" value="${esc(it.name||'')}"></div>
-      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="e-cat"><option value=\"Backyard\" ${it.category===\"Backyard\"?\"selected\":\"\"}>Backyard</option>
-<option value=\"Breakfast Nook\" ${it.category===\"Breakfast Nook\"?\"selected\":\"\"}>Breakfast Nook</option>
-<option value=\"Courtyard\" ${it.category===\"Courtyard\"?\"selected\":\"\"}>Courtyard</option>
-<option value=\"Engawa\" ${it.category===\"Engawa\"?\"selected\":\"\"}>Engawa</option>
-<option value=\"Entry\" ${it.category===\"Entry\"?\"selected\":\"\"}>Entry</option>
-<option value=\"Entry Closet\" ${it.category===\"Entry Closet\"?\"selected\":\"\"}>Entry Closet</option>
-<option value=\"Entry Half Bath\" ${it.category===\"Entry Half Bath\"?\"selected\":\"\"}>Entry Half Bath</option>
-<option value=\"Family Room\" ${it.category===\"Family Room\"?\"selected\":\"\"}>Family Room</option>
-<option value=\"Formal Dining\" ${it.category===\"Formal Dining\"?\"selected\":\"\"}>Formal Dining</option>
-<option value=\"Formal Living\" ${it.category===\"Formal Living\"?\"selected\":\"\"}>Formal Living</option>
-<option value=\"Guest House\" ${it.category===\"Guest House\"?\"selected\":\"\"}>Guest House</option>
-<option value=\"In-Law Suite\" ${it.category===\"In-Law Suite\"?\"selected\":\"\"}>In-Law Suite</option>
-<option value=\"Library\" ${it.category===\"Library\"?\"selected\":\"\"}>Library</option>
-<option value=\"Primary Suite\" ${it.category===\"Primary Suite\"?\"selected\":\"\"}>Primary Suite</option>
-<option value=\"Princess Suite\" ${it.category===\"Princess Suite\"?\"selected\":\"\"}>Princess Suite</option>
-<option value=\"Tanuja's Office\" ${it.category===\"Tanuja's Office\"?\"selected\":\"\"}>Tanuja's Office</option></select></div>
+      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="e-cat"><option value="">Select room…</option><option value="Backyard">Backyard</option><option value="Breakfast Nook">Breakfast Nook</option><option value="Courtyard">Courtyard</option><option value="Engawa">Engawa</option><option value="Entry">Entry</option><option value="Entry Closet">Entry Closet</option><option value="Entry Half Bath">Entry Half Bath</option><option value="Family Room">Family Room</option><option value="Formal Dining">Formal Dining</option><option value="Formal Living">Formal Living</option><option value="Guest House">Guest House</option><option value="In-Law Suite">In-Law Suite</option><option value="Library">Library</option><option value="Primary Suite">Primary Suite</option><option value="Princess Suite">Princess Suite</option><option value="Tanuja's Office">Tanuja's Office</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="e-val" value="${esc(it.value||'')}" placeholder="$4,500"></div>
@@ -702,6 +687,7 @@ function openDetail(id) {
       <button class="sbtn" onclick="closeSheet()">Cancel</button>
       <button class="sbtn primary" id="editSaveBtn" onclick="saveEdit()">Save</button>
     </div>`;
+  const catEl = document.getElementById('e-cat'); if(catEl) catEl.value = it.category || '';
   document.getElementById('sheetOverlay').classList.add('open');
   document.getElementById('detailSheet').classList.add('open');
 }
