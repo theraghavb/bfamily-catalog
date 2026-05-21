@@ -859,7 +859,7 @@ async function saveNew() {
 
 
 // ── PDF EXPORT ──
-function exportPDF() {
+async function exportPDF() {
   const filtered = getFiltered();
   if (!filtered.length) { alert('No items to export.'); return; }
 
@@ -874,8 +874,20 @@ function exportPDF() {
     : currentFilter.startsWith('room:') ? currentFilter.slice(5)
     : currentFilter;
 
+  // Pre-fetch all images as blob URLs so they work in the print window
+  const imgMap = {};
+  await Promise.all(filtered.map(async it => {
+    if (!it.image_url) return;
+    try {
+      const res = await fetch(it.image_url);
+      const blob = await res.blob();
+      imgMap[it.id] = URL.createObjectURL(blob);
+    } catch(e) { imgMap[it.id] = null; }
+  }));
+
   const cards = filtered.map((it, i) => {
-    const img = it.image_url ? '<img src="' + it.image_url + '">' : '<div class="no-img">No photo</div>';
+    const imgSrc = imgMap[it.id];
+    const img = imgSrc ? '<img src="' + imgSrc + '">' : '<div class="no-img">No photo</div>';
     const dec = it.decision && it.decision !== 'undecided' ? '<span class="tag">' + it.decision + '</span>' : '';
     const loc = it.location ? '<span class="tag">' + it.location.toUpperCase() + '</span>' : '';
     const ant = it.is_antique ? '<span class="tag antique">Antique</span>' : '';
@@ -914,19 +926,15 @@ function exportPDF() {
   ].join('\n');
 
   const win = window.open('', '_blank');
-  win.document.title = 'B.Family — ' + filterLabel;
   const d = win.document;
-  const head = d.createElement('head');
-  const style = d.createElement('style');
-  style.textContent = css;
-  head.appendChild(style);
-  d.documentElement.appendChild(head);
-
-  const body = d.body;
-  body.innerHTML = '<div class="cover"><h1>B.Family</h1><p>Los Altos Hills \xb7 Private Collection</p><div class="fl">' + filterLabel + '</div><div class="cnt">' + filtered.length + ' items</div><div class="addr">25751 Elena Road</div></div><div class="grid">' + cards + '</div><div class="footer">B.Family \xb7 Los Altos Hills \xb7 Private Collection \xb7 25751 Elena Road</div>';
-
-  win.onload = () => setTimeout(() => win.print(), 600);
-  if (d.readyState === 'complete') setTimeout(() => win.print(), 800);
+  d.open();
+  d.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>B.Family</title><style>' + css + '</style></head><body>');
+  d.write('<div class="cover"><h1>B.Family</h1><p>Los Altos Hills \xb7 Private Collection</p><div class="fl">' + filterLabel + '</div><div class="cnt">' + filtered.length + ' items</div><div class="addr">25751 Elena Road</div></div>');
+  d.write('<div class="grid">' + cards + '</div>');
+  d.write('<div class="footer">B.Family \xb7 Los Altos Hills \xb7 Private Collection \xb7 25751 Elena Road</div>');
+  d.write('</body></html>');
+  d.close();
+  setTimeout(() => win.print(), 1200);
 }
 
 // ── EXPORT ──
