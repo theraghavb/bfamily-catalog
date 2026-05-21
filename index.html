@@ -180,6 +180,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .ptag-ca { background: rgba(232,237,242,.9); color: var(--ca-fg); }
 .ptag-london { background: rgba(238,237,245,.9); color: var(--london-fg); }
 .ptag-dubai { background: rgba(245,240,232,.9); color: var(--dubai-fg); }
+.ptag-antique { background: rgba(61,54,40,.15); color: var(--espresso); }
 .photo-num { position: absolute; top: 6px; right: 6px; font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .04em; }
 
 /* ── BOTTOM NAV ── */
@@ -328,6 +329,8 @@ textarea.sheet-input { resize: none; height: 72px; }
         <div class="sditem" onclick="setFilter('london',this)">London <span class="sdcount" id="d-c-london">0</span></div>
         <div class="sditem" onclick="setFilter('dubai',this)">Dubai <span class="sdcount" id="d-c-dubai">0</span></div>
       </div>
+      <div class="sditem" onclick="setFilter('antique',this)">Antique <span class="sdcount" id="d-c-antique">0</span></div>
+      </div>
       <div class="sddivider"></div>
       <div class="sdsection"><div class="sdlabel">Rooms</div><div id="d-roomnav"></div></div>
     </aside>
@@ -352,6 +355,7 @@ textarea.sheet-input { resize: none; height: 72px; }
       <button class="fpill" data-f="ca" onclick="setFilter('ca',this)">California</button>
       <button class="fpill" data-f="london" onclick="setFilter('london',this)">London</button>
       <button class="fpill" data-f="dubai" onclick="setFilter('dubai',this)">Dubai</button>
+      <button class="fpill" data-f="antique" onclick="setFilter('antique',this)">Antique</button>
     </div>
     <div class="searchbar">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
@@ -407,6 +411,10 @@ textarea.sheet-input { resize: none; height: 72px; }
     </div>
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="add-notes" placeholder="Origin, condition, history…"></textarea>
+    <label class="sheet-form-label">Antique</label>
+    <div class="seg">
+      <button class="seg-btn" id="add-antique" onclick="addToggleAntique()">Mark as antique</button>
+    </div>
     <label class="sheet-form-label">Decision</label>
     <div class="seg">
       <button class="seg-btn au" id="add-d-undecided" onclick="addSetDec('undecided')">Undecided</button>
@@ -438,7 +446,7 @@ const BUCKET = 'catalog-images';
 const isMobile = () => window.innerWidth < 768;
 
 let items = [], currentFilter = 'all', mobileView = 'grid', activeItem = null;
-let addDec = 'undecided', addLoc = null, pendingFile = null, editFile = null;
+let addDec = 'undecided', addLoc = null, addAntique = false, pendingFile = null, editFile = null;
 
 // ── SPLASH ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -523,6 +531,7 @@ function updateCounts() {
   const ca = items.filter(i=>i.location==='ca').length;
   const lon = items.filter(i=>i.location==='london').length;
   const dub = items.filter(i=>i.location==='dubai').length;
+  const ant = items.filter(i=>i.is_antique).length;
   const statsHTML = `
     <div class="sstat"><div class="sstat-label">Total</div><div class="sstat-val">${items.length}</div></div>
     <div class="sstat"><div class="sstat-label">Keep</div><div class="sstat-val" style="color:var(--keep-fg)">${k}</div></div>
@@ -530,7 +539,8 @@ function updateCounts() {
     <div class="sstat"><div class="sstat-label">Undecided</div><div class="sstat-val">${u}</div></div>
     <div class="sstat"><div class="sstat-label">CA</div><div class="sstat-val" style="color:var(--ca-fg)">${ca}</div></div>
     <div class="sstat"><div class="sstat-label">LDN</div><div class="sstat-val" style="color:var(--london-fg)">${lon}</div></div>
-    <div class="sstat"><div class="sstat-label">DXB</div><div class="sstat-val" style="color:var(--dubai-fg)">${dub}</div></div>`;
+    <div class="sstat"><div class="sstat-label">DXB</div><div class="sstat-val" style="color:var(--dubai-fg)">${dub}</div></div>
+    <div class="sstat"><div class="sstat-label">Antique</div><div class="sstat-val" style="color:var(--espresso)">${ant}</div></div>`;
   ['m-statsstrip','d-statsstrip'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=statsHTML; });
   ['all','keep','sell','undecided','ca','london'].forEach(f => {
     const vals = {all:items.length,keep:k,sell:s,undecided:u,ca,london:lon,dubai:dub};
@@ -549,6 +559,7 @@ function getFiltered() {
     if (currentFilter === 'ca') return it.location === 'ca';
     if (currentFilter === 'london') return it.location === 'london';
     if (currentFilter === 'dubai') return it.location === 'dubai';
+    if (currentFilter === 'antique') return !!it.is_antique;
     if (currentFilter.startsWith('room:')) return it.category === currentFilter.slice(5);
     return true;
   });
@@ -574,8 +585,9 @@ function imgSrc(it) { return it.img_url || it.img || ''; }
 function tagsHTML(it) {
   const dec = it.decision || 'undecided';
   const dt = dec==='keep'?`<span class="ptag ptag-keep">Keep</span>`:dec==='sell'?`<span class="ptag ptag-sell">Sell</span>`:`<span class="ptag ptag-undecided">—</span>`;
+  const at = it.is_antique ? `<span class="ptag ptag-antique">Antique</span>` : '';
   const lt = it.location==='ca'?`<span class="ptag ptag-ca">CA</span>`:it.location==='london'?`<span class="ptag ptag-london">LDN</span>`:it.location==='dubai'?`<span class="ptag ptag-dubai">DXB</span>`:'';
-  return dt + lt;
+  return dt + lt + at;
 }
 
 function cardHTML(it, idx) {
@@ -629,7 +641,11 @@ function openDetail(id) {
   document.getElementById('sheetFormBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Name</label><input class="sheet-input" id="e-name" value="${esc(it.name||'')}"></div>
+      <div><label class="sheet-form-label">Room</label><input class="sheet-input" id="e-cat" value="${esc(it.category||'')}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="e-val" value="${esc(it.value||'')}" placeholder="$4,500"></div>
+      <div><label class="sheet-form-label">Antique</label><div class="seg" style="margin-top:5px"><button class="seg-btn ${it.is_antique?'ak':''}" id="e-antique" onclick="editToggleAntique()">Antique</button></div></div>
     </div>
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="e-notes">${esc(it.notes||'')}</textarea>
@@ -671,6 +687,11 @@ function handleEditFile(e) {
   r.readAsDataURL(f);
 }
 
+function editToggleAntique() {
+  activeItem.is_antique = !activeItem.is_antique;
+  document.getElementById('e-antique').className = activeItem.is_antique ? 'seg-btn ak' : 'seg-btn';
+}
+
 function editSetDec(d) {
   activeItem.decision = d;
   document.querySelectorAll('#detailSheet .seg:first-of-type .seg-btn').forEach(b => b.className = 'seg-btn');
@@ -695,8 +716,10 @@ async function saveEdit() {
     if (editFile) imgUrl = await sbUpload(editFile, `item_${activeItem.id}_${Date.now()}.jpg`);
     const update = {
       name: document.getElementById('e-name').value.trim() || activeItem.name,
+      category: document.getElementById('e-cat').value.trim() || activeItem.category,
       value: document.getElementById('e-val').value.trim(),
       notes: document.getElementById('e-notes').value.trim(),
+      is_antique: activeItem.is_antique || false,
       decision: activeItem.decision || 'undecided',
       location: activeItem.decision === 'keep' ? (activeItem.location || null) : null,
       img_url: imgUrl, updated_at: new Date().toISOString()
@@ -725,8 +748,14 @@ function closeSheet() {
 }
 
 // ── ADD SHEET ──
+function addToggleAntique() {
+  addAntique = !addAntique;
+  document.getElementById('add-antique').className = addAntique ? 'seg-btn ak' : 'seg-btn';
+  document.getElementById('add-antique').textContent = addAntique ? '✓ Antique' : 'Mark as antique';
+}
+
 function openAdd() {
-  addDec = 'undecided'; addLoc = null; pendingFile = null;
+  addDec = 'undecided'; addLoc = null; addAntique = false; pendingFile = null;
   ['add-name','add-cat','add-era','add-val','add-notes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('uploadZone').innerHTML = '<div style="font-size:28px;margin-bottom:6px">↑</div>Tap to upload a photo';
   document.querySelectorAll('#addSheet .seg-btn').forEach(b => b.className = 'seg-btn');
@@ -776,6 +805,7 @@ async function saveNew() {
       value: document.getElementById('add-val').value.trim(),
       notes: document.getElementById('add-notes').value.trim(),
       decision: addDec, location: addDec === 'keep' ? (addLoc || null) : null,
+      is_antique: addAntique,
       img_url: imgUrl, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     };
     const result = await sbFetch('catalog_items', { method: 'POST', body: JSON.stringify(newItem) });
