@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="B.Family">
+<meta name="theme-color" content="#FAFAF8">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>B.Family — Los Altos Hills</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0D0D0D;
+  --off-white: #FAFAF8;
+  --cream: #F5F2EC;
+  --espresso: #3D3628;
+  --olive: #4A4A3A;
+  --mid-gray: #888780;
+  --light-gray: #D3D1C7;
+  --keep-bg: #EEF2E8; --keep-fg: #2A3D1A;
+  --sell-bg: #F2EBE8; --sell-fg: #3D1E14;
+  --ca-bg: #E8EDF2; --ca-fg: #1A2A3D;
+  --london-bg: #EEEDF5; --london-fg: #1F1A3D;
+  --dubai-bg: #F5F0E8; --dubai-fg: #3D2E0A;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--off-white); color: var(--black); min-height: 100vh; overscroll-behavior: none; }
+
+/* ── AUTH SCREEN ── */
+#authScreen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: var(--cream); padding: 2rem;
+}
+.auth-box { width: 100%; max-width: 360px; }
+.auth-wordmark {
+  font-family: 'EB Garamond', serif; font-size: 28px; font-weight: 400;
+  letter-spacing: .05em; color: var(--black); margin-bottom: 4px;
+}
+.auth-sub { font-size: 12px; color: var(--mid-gray); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2.5rem; }
+.auth-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 6px; display: block; }
+.auth-input {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--light-gray); background: var(--off-white);
+  font-family: 'Inter', sans-serif; font-size: 14px; color: var(--black);
+  border-radius: 0; margin-bottom: 1rem; letter-spacing: .08em;
+  transition: border-color .15s;
+}
+.auth-input:focus { outline: none; border-color: var(--mid-gray); }
+.auth-btn {
+  width: 100%; padding: 13px; background: var(--black); color: var(--off-white);
+  border: none; font-family: 'Inter', sans-serif; font-size: 12px;
+  letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  transition: opacity .15s;
+}
+.auth-btn:hover { opacity: .85; }
+.auth-error { font-size: 12px; color: var(--sell-fg); margin-top: 8px; display: none; }
+.auth-rule { height: 1px; background: var(--light-gray); margin: 2rem 0; }
+
+/* ── APP SHELL ── */
+#appShell { display: none; flex-direction: column; height: 100vh; }
+
+/* ── NAV ── */
+nav {
+  background: var(--off-white); border-bottom: 1px solid var(--light-gray);
+  padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  height: 56px; flex-shrink: 0;
+  padding-top: var(--safe-top);
+}
+.nav-brand { font-family: 'EB Garamond', serif; font-size: 18px; letter-spacing: .03em; }
+.nav-brand span { color: var(--mid-gray); }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.nav-meta { font-size: 11px; color: var(--mid-gray); letter-spacing: .05em; display: none; }
+@media(min-width:640px) { .nav-meta { display: block; } }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400;
+  padding: 7px 14px; border: 1px solid var(--light-gray); border-radius: 0;
+  background: transparent; color: var(--espresso); cursor: pointer;
+  letter-spacing: .04em; transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: var(--cream); border-color: var(--mid-gray); }
+.btn.primary { background: var(--black); color: var(--off-white); border-color: var(--black); }
+.btn.primary:hover { opacity: .85; }
+.btn.danger { color: var(--sell-fg); border-color: var(--sell-bg); }
+.btn.danger:hover { background: var(--sell-bg); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── LAYOUT ── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 200px; flex-shrink: 0;
+  background: var(--cream); border-right: 1px solid var(--light-gray);
+  overflow-y: auto; padding: 1.25rem 0;
+  display: none;
+}
+@media(min-width:768px) { .sidebar { display: block; } }
+.sidebar-label {
+  font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--mid-gray); padding: 0 1.25rem; margin-bottom: .5rem;
+}
+.sidebar-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 1.25rem; font-size: 13px; color: var(--espresso);
+  cursor: pointer; transition: background .1s;
+  border-left: 2px solid transparent;
+}
+.sidebar-item:hover { background: rgba(0,0,0,.04); }
+.sidebar-item.active { background: var(--off-white); border-left-color: var(--black); color: var(--black); font-weight: 500; }
+.sidebar-count { font-size: 11px; color: var(--mid-gray); background: var(--off-white); padding: 2px 7px; border-radius: 10px; }
+.sidebar-divider { height: 1px; background: var(--light-gray); margin: .75rem 1.25rem; }
+.sidebar-section { margin-bottom: 1.5rem; }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+/* ── STATS BAR ── */
+.statsbar { display: flex; border-bottom: 1px solid var(--light-gray); flex-shrink: 0; }
+.stat { flex: 1; padding: .9rem 1.25rem; border-right: 1px solid var(--light-gray); }
+.stat:last-child { border-right: none; }
+.stat-label { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 5px; }
+.stat-val { font-family: 'EB Garamond', serif; font-size: 26px; line-height: 1; color: var(--black); }
+.stat-sub { font-size: 11px; color: var(--mid-gray); margin-top: 3px; }
+.stat-dest { display: flex; gap: 10px; padding-top: 4px; }
+.stat-dest-item { font-size: 11px; color: var(--mid-gray); }
+.stat-dest-item strong { font-family: 'EB Garamond', serif; font-size: 18px; font-weight: 400; color: var(--black); margin-right: 2px; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--light-gray);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  background: var(--off-white); flex-wrap: wrap;
+}
+.search-wrap { flex: 1; min-width: 160px; position: relative; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--mid-gray); pointer-events: none; }
+.search {
+  width: 100%; padding: 8px 10px 8px 32px;
+  border: 1px solid var(--light-gray); border-radius: 0;
+  background: var(--cream); color: var(--black);
+  font-family: 'Inter', sans-serif; font-size: 13px; transition: border-color .15s;
+}
+.search:focus { outline: none; border-color: var(--mid-gray); background: var(--off-white); }
+.search::placeholder { color: var(--mid-gray); }
+.view-toggle { display: flex; border: 1px solid var(--light-gray); overflow: hidden; }
+.view-btn { padding: 7px 11px; background: transparent; border: none; border-right: 1px solid var(--light-gray); cursor: pointer; color: var(--mid-gray); font-size: 13px; transition: all .15s; }
+.view-btn:last-child { border-right: none; }
+.view-btn.active { background: var(--black); color: var(--off-white); }
+.filter-select {
+  padding: 7px 10px; border: 1px solid var(--light-gray); border-radius: 0;
+  background: var(--cream); color: var(--espresso);
+  font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer;
+}
+
+/* ── CONTENT ── */
+.content-area { padding: 1.5rem; flex: 1; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; background: var(--light-gray); }
+@media(min-width:640px) { .grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); } }
+
+/* ── CARD ── */
+.card { background: var(--off-white); cursor: pointer; transition: background .15s; position: relative; overflow: hidden; }
+.card:hover { background: var(--cream); }
+.card:active { background: var(--cream); }
+.card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--cream); filter: saturate(.9); transition: filter .2s; }
+.card:hover .card-img { filter: saturate(1); }
+.card-body { padding: 10px 12px 13px; }
+.card-name { font-family: 'EB Garamond', serif; font-size: 15px; color: var(--black); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-room { font-size: 11px; color: var(--mid-gray); margin-bottom: 7px; letter-spacing: .02em; }
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 10px; padding: 2px 7px; letter-spacing: .04em; font-weight: 500; }
+.tag-keep { background: var(--keep-bg); color: var(--keep-fg); }
+.tag-sell { background: var(--sell-bg); color: var(--sell-fg); }
+.tag-undecided { background: var(--cream); color: var(--mid-gray); border: 1px solid var(--light-gray); }
+.tag-ca { background: var(--ca-bg); color: var(--ca-fg); }
+.tag-london { background: var(--london-bg); color: var(--london-fg); }
+.tag-dubai { background: var(--dubai-bg); color: var(--dubai-fg); }
+.card-num { position: absolute; top: 8px; right: 8px; font-size: 10px; color: var(--off-white); background: rgba(13,13,13,.4); padding: 2px 6px; letter-spacing: .04em; }
+
+/* ── LIST VIEW ── */
+.list { border-top: 1px solid var(--light-gray); }
+.list-header { display: grid; grid-template-columns: 56px 1fr 100px 100px; gap: 1rem; padding: 8px 1rem; border-bottom: 1px solid var(--black); }
+.list-header-cell { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mid-gray); }
+.list-item { display: grid; grid-template-columns: 56px 1fr 100px 100px; gap: 1rem; align-items: center; padding: 10px 1rem; border-bottom: 1px solid var(--light-gray); cursor: pointer; transition: background .1s; }
+.list-item:hover { background: var(--cream); }
+.list-thumb { width: 56px; height: 42px; object-fit: cover; display: block; }
+.list-name { font-family: 'EB Garamond', serif; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-room { font-size: 11px; color: var(--mid-gray); }
+
+/* ── ROOM GROUPS ── */
+.room-group { margin-bottom: 2.5rem; }
+.room-header { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 1rem; padding-bottom: 8px; border-bottom: 1px solid var(--light-gray); display: flex; justify-content: space-between; }
+
+/* ── MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(13,13,13,.55); z-index: 200; align-items: flex-end; justify-content: center; padding: 0; backdrop-filter: blur(3px); }
+.modal-overlay.open { display: flex; }
+@media(min-width:640px) { .modal-overlay { align-items: center; padding: 1rem; } }
+.modal {
+  background: var(--off-white); width: 100%; max-width: 580px;
+  max-height: 92vh; overflow-y: auto;
+  border: 1px solid var(--light-gray);
+  border-bottom: none;
+  border-radius: 0;
+  padding-bottom: var(--safe-bottom);
+}
+@media(min-width:640px) { .modal { border-bottom: 1px solid var(--light-gray); border-radius: 0; max-height: 88vh; } }
+.modal-header { padding: 1.25rem 1.5rem 1rem; border-bottom: 1px solid var(--light-gray); display: flex; align-items: flex-start; justify-content: space-between; position: sticky; top: 0; background: var(--off-white); z-index: 1; }
+.modal-title { font-family: 'EB Garamond', serif; font-size: 20px; font-weight: 400; line-height: 1.2; max-width: 440px; }
+.modal-subtitle { font-size: 11px; color: var(--mid-gray); margin-top: 3px; letter-spacing: .04em; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--mid-gray); font-size: 22px; line-height: 1; padding: 0 0 0 12px; }
+.modal-img { width: 100%; height: 260px; object-fit: cover; display: block; filter: saturate(.9); }
+.modal-body { padding: 1.25rem 1.5rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1.1rem; }
+.form-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 5px; display: block; }
+.form-input { width: 100%; padding: 9px 11px; border: 1px solid var(--light-gray); background: var(--cream); color: var(--black); font-family: 'Inter', sans-serif; font-size: 13px; border-radius: 0; transition: border-color .15s; }
+.form-input:focus { outline: none; border-color: var(--mid-gray); background: var(--off-white); }
+textarea.form-input { resize: vertical; min-height: 68px; }
+.seg-group { display: flex; border: 1px solid var(--light-gray); }
+.seg-btn { flex: 1; padding: 10px 6px; background: transparent; border: none; border-right: 1px solid var(--light-gray); cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; letter-spacing: .04em; color: var(--mid-gray); transition: all .15s; }
+.seg-btn:last-child { border-right: none; }
+.seg-btn:hover { background: var(--cream); color: var(--espresso); }
+.seg-btn.active-undecided { background: var(--cream); color: var(--espresso); font-weight: 500; }
+.seg-btn.active-keep { background: var(--keep-bg); color: var(--keep-fg); font-weight: 500; }
+.seg-btn.active-sell { background: var(--sell-bg); color: var(--sell-fg); font-weight: 500; }
+.seg-btn.active-ca { background: var(--ca-bg); color: var(--ca-fg); font-weight: 500; }
+.seg-btn.active-london { background: var(--london-bg); color: var(--london-fg); font-weight: 500; }
+.seg-btn.active-dubai { background: var(--dubai-bg); color: var(--dubai-fg); font-weight: 500; }
+.modal-footer { display: flex; gap: 8px; justify-content: space-between; padding: 1rem 1.5rem; border-top: 1px solid var(--light-gray); background: var(--cream); position: sticky; bottom: 0; }
+.modal-footer-right { display: flex; gap: 8px; }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone { border: 1px dashed var(--light-gray); padding: 1.5rem; text-align: center; cursor: pointer; color: var(--mid-gray); font-size: 13px; transition: all .15s; background: var(--cream); }
+.upload-zone:hover { border-color: var(--mid-gray); color: var(--espresso); }
+.upload-preview { width: 100%; height: 180px; object-fit: cover; display: block; margin-bottom: 4px; }
+.upload-replace { font-size: 11px; color: var(--mid-gray); text-align: center; cursor: pointer; padding: 4px; }
+.upload-replace:hover { color: var(--espresso); }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: calc(1.5rem + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: var(--black); color: var(--off-white); padding: 10px 20px; font-size: 12px; letter-spacing: .04em; z-index: 500; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* ── LOADING ── */
+.loading { position: fixed; inset: 0; background: var(--off-white); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 1rem; }
+.loading-word { font-family: 'EB Garamond', serif; font-size: 24px; color: var(--black); }
+.loading-sub { font-size: 11px; color: var(--mid-gray); letter-spacing: .1em; text-transform: uppercase; }
+.spinner { width: 20px; height: 20px; border: 1px solid var(--light-gray); border-top-color: var(--black); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 4rem 1rem; font-family: 'EB Garamond', serif; font-size: 18px; color: var(--mid-gray); font-style: italic; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--light-gray); }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="loading-word">B.Family</div>
+  <div class="spinner"></div>
+  <div class="loading-sub">Loading catalog</div>
+</div>
+
+<!-- AUTH -->
+<div id="authScreen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-wordmark">B.Family</div>
+    <div class="auth-sub">Los Altos Hills — Catalog</div>
+    <label class="auth-label">Password</label>
+    <input class="auth-input" type="password" id="authInput" placeholder="············" onkeydown="if(event.key==='Enter')doAuth()">
+    <button class="auth-btn" onclick="doAuth()">Enter</button>
+    <div class="auth-error" id="authError">Incorrect password</div>
+    <div class="auth-rule"></div>
+    <div style="font-size:11px;color:var(--mid-gray);letter-spacing:.04em">B.Family · Private</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <nav>
+    <div class="nav-brand">B.Family <span>/ Los Altos Hills</span></div>
+    <div class="nav-right">
+      <span class="nav-meta" id="navMeta"></span>
+      <button class="btn" onclick="exportCSV()">Export</button>
+      <button class="btn primary" onclick="openAdd()">+ Add item</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Status</div>
+        <div class="sidebar-item active" data-f="all" onclick="setFilter('all',this)">All items <span class="sidebar-count" id="c-all">0</span></div>
+        <div class="sidebar-item" data-f="keep" onclick="setFilter('keep',this)">Keep <span class="sidebar-count" id="c-keep">0</span></div>
+        <div class="sidebar-item" data-f="sell" onclick="setFilter('sell',this)">Sell <span class="sidebar-count" id="c-sell">0</span></div>
+        <div class="sidebar-item" data-f="undecided" onclick="setFilter('undecided',this)">Undecided <span class="sidebar-count" id="c-undecided">0</span></div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Destination</div>
+        <div class="sidebar-item" data-f="ca" onclick="setFilter('ca',this)">California <span class="sidebar-count" id="c-ca">0</span></div>
+        <div class="sidebar-item" data-f="london" onclick="setFilter('london',this)">London <span class="sidebar-count" id="c-london">0</span></div>
+        <div class="sidebar-item" data-f="dubai" onclick="setFilter('dubai',this)">Dubai <span class="sidebar-count" id="c-dubai">0</span></div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Rooms</div>
+        <div id="roomNav"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="statsbar">
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-val" id="s-total">0</div></div>
+        <div class="stat"><div class="stat-label">Keep</div><div class="stat-val" id="s-keep" style="color:var(--keep-fg)">0</div></div>
+        <div class="stat"><div class="stat-label">Sell</div><div class="stat-val" id="s-sell" style="color:var(--sell-fg)">0</div></div>
+        <div class="stat"><div class="stat-label">Undecided</div><div class="stat-val" id="s-undec">0</div></div>
+        <div class="stat" style="display:none" id="destStat">
+          <div class="stat-label">Destinations</div>
+          <div class="stat-dest">
+            <div class="stat-dest-item"><strong id="s-ca">0</strong>CA</div>
+            <div class="stat-dest-item"><strong id="s-lon">0</strong>LDN</div>
+            <div class="stat-dest-item"><strong id="s-dub">0</strong>DXB</div>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          <input class="search" id="searchInput" placeholder="Search…" oninput="render()">
+        </div>
+        <select class="filter-select" id="roomFilter" onchange="render()"><option value="">All rooms</option></select>
+        <div class="view-toggle">
+          <button class="view-btn active" id="vGrid" onclick="setView('grid')" title="Grid">▦</button>
+          <button class="view-btn" id="vList" onclick="setView('list')" title="List">☰</button>
+          <button class="view-btn" id="vRoom" onclick="setView('room')" title="By room">⊞</button>
+        </div>
+      </div>
+      <div class="content-area" id="content"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modalTitle">Item</div><div class="modal-subtitle" id="modalSub"></div></div>
+      <button class="modal-close" onclick="closeModal('itemModal')">×</button>
+    </div>
+    <div id="modalImgWrap"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="addModalTitle">Add item</div></div>
+      <button class="modal-close" onclick="closeModal('addModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Photo</label>
+        <div id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-zone" id="uploadZone">
+            <div style="font-size:24px;margin-bottom:6px">↑</div>
+            Tap to upload a photo
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Item name *</label><input class="form-input" id="add-name" placeholder="e.g. Side table"></div>
+        <div class="form-group"><label class="form-label">Category / room</label><input class="form-input" id="add-cat" placeholder="e.g. Library"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Era / period</label><input class="form-input" id="add-era" placeholder="e.g. 1920s"></div>
+        <div class="form-group"><label class="form-label">Est. value</label><input class="form-input" id="add-val" placeholder="e.g. $3,500"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes / provenance</label><textarea class="form-input" id="add-notes" placeholder="Origin, condition, history…"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">Decision</label>
+        <div class="seg-group">
+          <button class="seg-btn active-undecided" id="add-d-undecided" onclick="addSetDec('undecided')">Undecided</button>
+          <button class="seg-btn" id="add-d-keep" onclick="addSetDec('keep')">Keep</button>
+          <button class="seg-btn" id="add-d-sell" onclick="addSetDec('sell')">Sell</button>
+        </div>
+      </div>
+      <div class="form-group" id="addLocGroup" style="opacity:.4">
+        <label class="form-label">Location — if keeping</label>
+        <div class="seg-group">
+          <button class="seg-btn" id="add-l-ca" onclick="addSetLoc('ca')">California</button>
+          <button class="seg-btn" id="add-l-london" onclick="addSetLoc('london')">London</button>
+          <button class="seg-btn" id="add-l-dubai" onclick="addSetLoc('dubai')">Dubai</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('addModal')">Cancel</button>
+        <div class="modal-footer-right">
+          <button class="btn primary" id="addSaveBtn" onclick="saveNewItem()">Save item</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ── (replace with your values after Supabase setup)
+const SUPABASE_URL   = window.SUPABASE_URL   || 'https://nzbwxpsuxknjdrqfsjhw.supabase.co';
+const SUPABASE_ANON  = window.SUPABASE_ANON  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56Ynd4cHN1eGtuamRycWZzamh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMTI2MTksImV4cCI6MjA5NDg4ODYxOX0.crPlu07tlIRS8ElTAToINujUppoL0qmlDL91tr9imNw';
+const APP_PASSWORD   = window.APP_PASSWORD   || '2575115752';
+const BUCKET         = 'catalog-images';
+
+// ── STATE ──
+let items = [];
+let currentFilter = 'all';
+let currentView = 'grid';
+let activeItem = null;
+let addDec = 'undecided';
+let addLoc = null;
+let pendingImgFile = null;
+let pendingImgB64 = null;
+
+// ── SUPABASE CLIENT (vanilla, no npm) ──
+async function sbFetch(path, opts={}) {
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
+    ...opts,
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...opts.headers
+    }
+  });
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function sbUploadImage(file, filename) {
+  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filename}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': file.type },
+    body: file
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
+}
+
+async function sbDeleteImage(filename) {
+  if (!filename || !filename.includes(BUCKET)) return;
+  const fname = filename.split('/').pop();
+  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${fname}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+  });
+}
+
+// ── AUTH ──
+function doAuth() {
+  const val = document.getElementById('authInput').value;
+  if (val === APP_PASSWORD) {
+    sessionStorage.setItem('bf_auth', '1');
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+    document.getElementById('appShell').style.flexDirection = 'column';
+    loadItems();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+    document.getElementById('authInput').value = '';
+    document.getElementById('authInput').focus();
+  }
+}
+
+// ── LOAD ──
+async function loadItems() {
+  document.getElementById('loading').style.display = 'flex';
+  try {
+    const data = await sbFetch('catalog_items?order=created_at.asc&select=*');
+    items = data || [];
+    populateSidebar();
+    populateRoomFilter();
+    render();
+  } catch(e) {
+    console.error(e);
+    showToast('Error loading items — check Supabase config');
+  }
+  document.getElementById('loading').style.display = 'none';
+}
+
+// ── RENDER ──
+function populateSidebar() {
+  const rooms = [...new Set(items.map(i=>i.category))].sort();
+  document.getElementById('roomNav').innerHTML = rooms.map(r => {
+    const cnt = items.filter(i=>i.category===r).length;
+    return `<div class="sidebar-item" data-f="room:${r}" onclick="setFilter('room:${r}',this)">${r} <span class="sidebar-count">${cnt}</span></div>`;
+  }).join('');
+}
+
+function populateRoomFilter() {
+  const sel = document.getElementById('roomFilter');
+  sel.innerHTML = '<option value="">All rooms</option>';
+  [...new Set(items.map(i=>i.category))].sort().forEach(r => {
+    const o = document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o);
+  });
+}
+
+function updateCounts() {
+  const keep=items.filter(i=>i.decision==='keep').length;
+  const sell=items.filter(i=>i.decision==='sell').length;
+  const undec=items.filter(i=>!i.decision||i.decision==='undecided').length;
+  const ca=items.filter(i=>i.location==='ca').length;
+  const lon=items.filter(i=>i.location==='london').length;
+  const dub=items.filter(i=>i.location==='dubai').length;
+  document.getElementById('s-total').textContent=items.length;
+  document.getElementById('s-keep').textContent=keep;
+  document.getElementById('s-sell').textContent=sell;
+  document.getElementById('s-undec').textContent=undec;
+  document.getElementById('c-all').textContent=items.length;
+  document.getElementById('c-keep').textContent=keep;
+  document.getElementById('c-sell').textContent=sell;
+  document.getElementById('c-undecided').textContent=undec;
+  document.getElementById('c-ca').textContent=ca;
+  document.getElementById('c-london').textContent=lon;
+  document.getElementById('c-dubai').textContent=dub;
+  if(document.getElementById('s-ca')) {
+    document.getElementById('s-ca').textContent=ca;
+    document.getElementById('s-lon').textContent=lon;
+    document.getElementById('s-dub').textContent=dub;
+  }
+  document.getElementById('navMeta').textContent=`${items.length} items`;
+}
+
+function getFiltered() {
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const roomSel=document.getElementById('roomFilter').value;
+  return items.filter(it=>{
+    if(q && ![it.name,it.category,it.notes||''].join(' ').toLowerCase().includes(q)) return false;
+    if(roomSel && it.category!==roomSel) return false;
+    if(currentFilter==='keep') return it.decision==='keep';
+    if(currentFilter==='sell') return it.decision==='sell';
+    if(currentFilter==='undecided') return !it.decision||it.decision==='undecided';
+    if(currentFilter==='ca') return it.location==='ca';
+    if(currentFilter==='london') return it.location==='london';
+    if(currentFilter==='dubai') return it.location==='dubai';
+    if(currentFilter.startsWith('room:')) return it.category===currentFilter.slice(5);
+    return true;
+  });
+}
+
+function tagsHTML(it) {
+  const dec=it.decision||'undecided';
+  const dt=dec==='keep'?`<span class="tag tag-keep">Keep</span>`:dec==='sell'?`<span class="tag tag-sell">Sell</span>`:`<span class="tag tag-undecided">—</span>`;
+  const lt=it.location==='ca'?`<span class="tag tag-ca">California</span>`:it.location==='london'?`<span class="tag tag-london">London</span>`:it.location==='dubai'?`<span class="tag tag-dubai">Dubai</span>`:'';
+  return dt+lt;
+}
+
+function imgSrc(it) { return it.img_url || it.img || ''; }
+
+function cardHTML(it, idx) {
+  return `<div class="card" onclick="openDetail('${it.id}')">
+    <div class="card-num">${String(idx+1).padStart(3,'0')}</div>
+    <img class="card-img" src="${imgSrc(it)}" alt="${it.name}" loading="lazy">
+    <div class="card-body">
+      <div class="card-name">${it.name}</div>
+      <div class="card-room">${it.category||''}</div>
+      <div class="card-tags">${tagsHTML(it)}</div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  updateCounts();
+  const list = getFiltered();
+  const content = document.getElementById('content');
+  if (!list.length) { content.innerHTML='<div class="empty">No items match this filter</div>'; return; }
+  if (currentView==='list') {
+    content.innerHTML = `<div class="list">
+      <div class="list-header"><div></div><div class="list-header-cell">Item</div><div class="list-header-cell">Status</div><div class="list-header-cell">Location</div></div>
+      ${list.map(it=>`<div class="list-item" onclick="openDetail('${it.id}')">
+        <img class="list-thumb" src="${imgSrc(it)}" alt="${it.name}" loading="lazy">
+        <div><div class="list-name">${it.name}</div><div class="list-room">${it.category||''}</div></div>
+        <div>${tagsHTML(it)}</div>
+        <div style="font-size:12px;color:var(--mid-gray)">${it.location||'—'}</div>
+      </div>`).join('')}
+    </div>`;
+  } else if (currentView==='room') {
+    const byRoom={};
+    list.forEach(it=>{ if(!byRoom[it.category]) byRoom[it.category]=[]; byRoom[it.category].push(it); });
+    content.innerHTML = Object.entries(byRoom).sort(([a],[b])=>a.localeCompare(b)).map(([room,ri])=>`
+      <div class="room-group">
+        <div class="room-header"><span>${room}</span><span style="font-weight:400">${ri.length} item${ri.length!==1?'s':''}</span></div>
+        <div class="grid">${ri.map((it,i)=>cardHTML(it,i)).join('')}</div>
+      </div>`).join('');
+  } else {
+    content.innerHTML = `<div class="grid">${list.map((it,i)=>cardHTML(it,i)).join('')}</div>`;
+  }
+}
+
+function setFilter(f, el) {
+  currentFilter=f;
+  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function setView(v) {
+  currentView=v;
+  ['Grid','List','Room'].forEach(x=>{ const b=document.getElementById('v'+x); if(b) b.classList.remove('active'); });
+  const id='v'+v.charAt(0).toUpperCase()+v.slice(1);
+  if(document.getElementById(id)) document.getElementById(id).classList.add('active');
+  render();
+}
+
+// ── DETAIL MODAL ──
+function openDetail(id) {
+  const it = items.find(i=>i.id===id);
+  if(!it) return;
+  activeItem = {...it};
+  document.getElementById('modalTitle').textContent = it.name;
+  document.getElementById('modalSub').textContent = it.category||'';
+  document.getElementById('modalImgWrap').innerHTML = imgSrc(it)
+    ? `<img class="modal-img" src="${imgSrc(it)}" alt="${it.name}">`
+    : `<div style="height:120px;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--mid-gray);font-size:13px">No photo</div>`;
+  const dec=it.decision||'undecided';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Item name</label><input class="form-input" id="edit-name" value="${escHTML(it.name||'')}"></div>
+      <div class="form-group"><label class="form-label">Est. value</label><input class="form-input" id="edit-val" value="${escHTML(it.value||'')}" placeholder="e.g. $4,500"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes / provenance</label><textarea class="form-input" id="edit-notes">${escHTML(it.notes||'')}</textarea></div>
+    <div class="form-group">
+      <label class="form-label">Replace photo</label>
+      <div onclick="document.getElementById('editFileInput').click()" style="cursor:pointer">
+        <div class="upload-zone" style="padding:.75rem">↑ Upload new photo</div>
+      </div>
+      <input type="file" id="editFileInput" accept="image/*" style="display:none" onchange="handleEditImg(event)">
+      <div id="editImgPreview"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Decision</label>
+      <div class="seg-group">
+        <button class="seg-btn ${dec==='undecided'?'active-undecided':''}" onclick="editSetDec('undecided')">Undecided</button>
+        <button class="seg-btn ${dec==='keep'?'active-keep':''}" onclick="editSetDec('keep')">Keep</button>
+        <button class="seg-btn ${dec==='sell'?'active-sell':''}" onclick="editSetDec('sell')">Sell</button>
+      </div>
+    </div>
+    <div class="form-group" id="editLocGroup" style="opacity:${dec==='keep'?1:.4}">
+      <label class="form-label">Location — if keeping</label>
+      <div class="seg-group">
+        <button class="seg-btn ${it.location==='ca'?'active-ca':''}" onclick="editSetLoc('ca')">California</button>
+        <button class="seg-btn ${it.location==='london'?'active-london':''}" onclick="editSetLoc('london')">London</button>
+        <button class="seg-btn ${it.location==='dubai'?'active-dubai':''}" onclick="editSetLoc('dubai')">Dubai</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn danger" onclick="deleteItem('${it.id}')">Delete</button>
+      <div class="modal-footer-right">
+        <button class="btn" onclick="closeModal('itemModal')">Cancel</button>
+        <button class="btn primary" id="editSaveBtn" onclick="saveEdit()">Save changes</button>
+      </div>
+    </div>`;
+  document.getElementById('itemModal').classList.add('open');
+}
+
+let editPendingFile = null;
+function handleEditImg(e) {
+  const file = e.target.files[0]; if(!file) return;
+  editPendingFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('editImgPreview').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:140px;object-fit:cover;margin-top:6px;display:block">`;
+    document.getElementById('modalImgWrap').innerHTML = `<img class="modal-img" src="${ev.target.result}">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function editSetDec(d) {
+  activeItem.decision=d;
+  document.querySelectorAll('#modalBody .seg-group:first-of-type .seg-btn').forEach(b=>{ b.className='seg-btn'; });
+  event.target.classList.add('active-'+d);
+  document.getElementById('editLocGroup').style.opacity=d==='keep'?1:.4;
+}
+function editSetLoc(l) {
+  activeItem.location=activeItem.location===l?null:l;
+  document.querySelectorAll('#editLocGroup .seg-btn').forEach(b=>b.className='seg-btn');
+  if(activeItem.location) event.target.classList.add('active-'+activeItem.location);
+}
+
+async function saveEdit() {
+  if(!activeItem) return;
+  const btn = document.getElementById('editSaveBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try {
+    let imgUrl = activeItem.img_url || activeItem.img || null;
+    if(editPendingFile) {
+      const fname = `item_${activeItem.id}_${Date.now()}.jpg`;
+      imgUrl = await sbUploadImage(editPendingFile, fname);
+    }
+    const update = {
+      name: document.getElementById('edit-name').value.trim()||activeItem.name,
+      value: document.getElementById('edit-val').value.trim(),
+      notes: document.getElementById('edit-notes').value.trim(),
+      decision: activeItem.decision||'undecided',
+      location: activeItem.decision==='keep'?(activeItem.location||null):null,
+      img_url: imgUrl,
+      updated_at: new Date().toISOString()
+    };
+    await sbFetch(`catalog_items?id=eq.${activeItem.id}`, { method:'PATCH', body: JSON.stringify(update) });
+    const idx = items.findIndex(i=>i.id===activeItem.id);
+    if(idx>=0) items[idx] = {...items[idx], ...update};
+    closeModal('itemModal');
+    render();
+    showToast('Saved');
+    editPendingFile = null;
+  } catch(e) { showToast('Error saving — '+e.message); }
+  btn.disabled=false; btn.textContent='Save changes';
+}
+
+async function deleteItem(id) {
+  if(!confirm('Delete this item? This cannot be undone.')) return;
+  const btn = document.querySelector('#modalBody .btn.danger');
+  if(btn) { btn.disabled=true; btn.textContent='Deleting…'; }
+  try {
+    const it = items.find(i=>i.id===id);
+    if(it && it.img_url) await sbDeleteImage(it.img_url);
+    await sbFetch(`catalog_items?id=eq.${id}`, { method:'DELETE', headers:{'Prefer':'return=minimal'} });
+    items = items.filter(i=>i.id!==id);
+    closeModal('itemModal');
+    populateSidebar();
+    populateRoomFilter();
+    render();
+    showToast('Item deleted');
+  } catch(e) { showToast('Error deleting — '+e.message); }
+}
+
+// ── ADD MODAL ──
+function openAdd() {
+  addDec='undecided'; addLoc=null; pendingImgFile=null; pendingImgB64=null;
+  ['add-name','add-cat','add-era','add-val','add-notes'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('uploadZone').innerHTML = '<div style="font-size:24px;margin-bottom:6px">↑</div>Tap to upload a photo';
+  document.querySelectorAll('#addModal .seg-btn').forEach(b=>b.className='seg-btn');
+  document.getElementById('add-d-undecided').classList.add('active-undecided');
+  document.getElementById('addLocGroup').style.opacity='.4';
+  document.getElementById('addModal').classList.add('open');
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0]; if(!file) return;
+  pendingImgFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingImgB64 = ev.target.result;
+    document.getElementById('uploadZone').innerHTML = `<img src="${pendingImgB64}" style="width:100%;height:160px;object-fit:cover;display:block;margin-bottom:4px"><div style="font-size:11px;color:var(--mid-gray)">Tap to replace</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addSetDec(d) {
+  addDec=d;
+  document.querySelectorAll('#addModal .seg-group:first-of-type .seg-btn').forEach(b=>b.className='seg-btn');
+  document.getElementById('add-d-'+d).classList.add('active-'+d);
+  document.getElementById('addLocGroup').style.opacity=d==='keep'?1:.4;
+}
+function addSetLoc(l) {
+  addLoc=addLoc===l?null:l;
+  document.querySelectorAll('#addLocGroup .seg-btn').forEach(b=>b.className='seg-btn');
+  if(addLoc) document.getElementById('add-l-'+addLoc).classList.add('active-'+addLoc);
+}
+
+async function saveNewItem() {
+  const name = document.getElementById('add-name').value.trim();
+  if(!name) { document.getElementById('add-name').focus(); showToast('Name is required'); return; }
+  const btn = document.getElementById('addSaveBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try {
+    let imgUrl = null;
+    if(pendingImgFile) {
+      const fname = `item_${Date.now()}.jpg`;
+      imgUrl = await sbUploadImage(pendingImgFile, fname);
+    }
+    const newItem = {
+      name,
+      category: document.getElementById('add-cat').value.trim()||'Uncategorised',
+      era: document.getElementById('add-era').value.trim(),
+      value: document.getElementById('add-val').value.trim(),
+      notes: document.getElementById('add-notes').value.trim(),
+      decision: addDec,
+      location: addDec==='keep'?(addLoc||null):null,
+      img_url: imgUrl,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    const result = await sbFetch('catalog_items', { method:'POST', body: JSON.stringify(newItem) });
+    const saved = Array.isArray(result) ? result[0] : result;
+    items.push(saved);
+    closeModal('addModal');
+    populateSidebar();
+    populateRoomFilter();
+    render();
+    showToast('Item added');
+    pendingImgFile=null; pendingImgB64=null;
+  } catch(e) { showToast('Error — '+e.message); }
+  btn.disabled=false; btn.textContent='Save item';
+}
+
+// ── EXPORT ──
+function exportCSV() {
+  const rows=[['Name','Room','Decision','Location','Est. Value','Notes']];
+  items.forEach(i=>rows.push([i.name,i.category,i.decision||'undecided',i.location||'',i.value||'',i.notes||'']));
+  const csv=rows.map(r=>r.map(c=>'"'+(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='BFamily_LosAltosHills.csv'; a.click();
+}
+
+// ── UTILS ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); activeItem=null; editPendingFile=null; }
+function showToast(msg, dur=2200) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+function escHTML(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loading').style.display = 'none';
+  if(sessionStorage.getItem('bf_auth')==='1') {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+    document.getElementById('appShell').style.flexDirection = 'column';
+    loadItems();
+  } else {
+    document.getElementById('authScreen').style.display = 'flex';
+    setTimeout(()=>document.getElementById('authInput').focus(), 100);
+  }
+});
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal('itemModal'); closeModal('addModal'); } });
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', function(e) { if(e.target===this) { closeModal('itemModal'); closeModal('addModal'); } }));
+</script>
+</body>
+</html>

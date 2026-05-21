@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>B.Family — Seed Catalog</title>
+<style>
+body { font-family: -apple-system, sans-serif; background: #FAFAF8; color: #0D0D0D; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+.box { max-width: 480px; width: 100%; padding: 2rem; }
+h1 { font-family: Georgia, serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
+p { font-size: 13px; color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #888; display: block; margin-bottom: 5px; }
+input { width: 100%; padding: 10px 12px; border: 1px solid #D3D1C7; background: #F5F2EC; font-size: 13px; margin-bottom: 1rem; font-family: monospace; }
+input:focus { outline: none; border-color: #888; }
+button { width: 100%; padding: 13px; background: #0D0D0D; color: #FAFAF8; border: none; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#log { margin-top: 1.5rem; font-size: 12px; font-family: monospace; color: #888; line-height: 1.8; max-height: 200px; overflow-y: auto; }
+.ok { color: #2A3D1A; } .err { color: #3D1E14; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>B.Family — Seed Catalog</h1>
+  <p>Run this once after setting up Supabase. It imports all 134 items with their photos. Takes about 60 seconds.</p>
+  <label>Supabase URL</label>
+  <input id="url" placeholder="https://xxxx.supabase.co" type="url">
+  <label>Supabase Anon Key</label>
+  <input id="key" placeholder="eyJhbGciOiJIUzI1NiIs..." type="text">
+  <button id="btn" onclick="runSeed()">Import all 134 items</button>
+  <div id="log"></div>
+</div>
+<script src="seed.js"></script>
+<script>
+// Override the auto-run seed() from seed.js
+// (seed.js defines ITEMS but we call seed manually here)
+async function runSeed() {
+  const url = document.getElementById('url').value.trim();
+  const key = document.getElementById('key').value.trim();
+  if (!url || !key) { log('Please fill in both fields', 'err'); return; }
+  const btn = document.getElementById('btn');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  log(`Starting import of ${ITEMS.length} items…`);
+  const chunkSize = 10;
+  let ok = 0;
+  for (let i = 0; i < ITEMS.length; i += chunkSize) {
+    const chunk = ITEMS.slice(i, i + chunkSize);
+    try {
+      const res = await fetch(url + '/rest/v1/catalog_items', {
+        method: 'POST',
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(chunk)
+      });
+      if (!res.ok) { const t = await res.text(); log('Error chunk ' + (Math.floor(i/chunkSize)+1) + ': ' + t, 'err'); }
+      else { ok += chunk.length; log(`✓ ${ok} / ${ITEMS.length} items imported`, 'ok'); }
+    } catch(e) { log('Network error: ' + e.message, 'err'); }
+  }
+  log('Done! You can close this page and open the app.', 'ok');
+  btn.textContent = 'Import complete';
+}
+function log(msg, cls='') {
+  const d = document.getElementById('log');
+  d.innerHTML += `<div class="${cls}">${msg}</div>`;
+  d.scrollTop = d.scrollHeight;
+}
+</script>
+</body>
+</html>
