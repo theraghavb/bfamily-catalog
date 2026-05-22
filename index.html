@@ -248,6 +248,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #1C140A
 .ptag-dubai { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
 .ptag-antique { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
 .ptag-donate { background: rgba(235,242,228,.92); color: #3D4A1A; }
+.ptag-starred { background: rgba(255,210,80,.9); color: #5C4200; }
+.star-btn { position: absolute; top: 7px; left: 7px; z-index: 3; background: none; border: none; font-size: 18px; cursor: pointer; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); transition: transform .15s; }
+.star-btn:active { transform: scale(1.3); }
 .photo-num { position: absolute; top: 7px; right: 7px; font-size: 8px; color: rgba(255,255,255,.5); letter-spacing: .04em; background: rgba(13,13,13,.25); padding: 1px 4px; }
 
 /* ── BOTTOM NAV ── */
@@ -412,6 +415,7 @@ textarea.sheet-input { resize: none; height: 72px; }
         <div class="sdlabel">Tags</div>
         <div class="sditem" onclick="setFilter('antique',this)">Antique <span class="sdcount" id="d-c-antique">0</span></div>
         <div class="sditem" onclick="setFilter('donate',this)">Donate <span class="sdcount" id="d-c-donate">0</span></div>
+        <div class="sditem" style="display:flex;justify-content:space-between;align-items:center" onclick="setFilter('starred',this)">★ Starred <span style="display:flex;align-items:center;gap:6px"><span class="sdcount" id="d-c-starred">0</span><button onclick="event.stopPropagation();clearAllStars()" style="font-size:9px;padding:1px 6px;border:0.5px solid #D3D1C7;background:none;cursor:pointer;border-radius:8px;color:#888780">Clear</button></span></div>
       </div>
       <div class="sddivider"></div>
       <div class="sdsection">
@@ -444,6 +448,7 @@ textarea.sheet-input { resize: none; height: 72px; }
       <button class="fpill" data-f="dubai" onclick="setFilter('dubai',this)">Dubai</button>
       <button class="fpill" data-f="antique" onclick="setFilter('antique',this)">Antique</button>
       <button class="fpill" data-f="donate" onclick="setFilter('donate',this)">Donate</button>
+      <button class="fpill" data-f="starred" onclick="setFilter('starred',this)">★ Starred</button>
       <button class="fpill multi-toggle" id="m-multi-btn" onclick="toggleMultiModeMobile()" style="background:#F5F2EC;border:1px dashed #B4B2A9;color:#888780">Multi</button>
     </div>
     <div class="searchbar">
@@ -639,6 +644,7 @@ function updateCounts() {
   const dub = items.filter(i=>i.location==='dubai').length;
   const ant = items.filter(i=>i.is_antique).length;
   const don = items.filter(i=>i.donate).length;
+  const starred = items.filter(i=>i.starred).length;
   // Update sidebar counts
   const setC = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   setC('d-c-all', items.length);
@@ -650,6 +656,7 @@ function updateCounts() {
   setC('d-c-dubai', dub);
   setC('d-c-antique', ant);
   setC('d-c-donate', don);
+  setC('d-c-starred', starred);
   const statsHTML = `
     <div class="sstat"><div class="sstat-label">Total</div><div class="sstat-val">${items.length}</div></div>
     <div class="sstat"><div class="sstat-label">Keep</div><div class="sstat-val" style="color:var(--keep-fg)">${k}</div></div>
@@ -684,6 +691,7 @@ function getFiltered() {
     if (currentFilter === 'dubai') return it.location === 'dubai';
     if (currentFilter === 'antique') return !!it.is_antique;
     if (currentFilter === 'donate') return !!it.donate;
+    if (currentFilter === 'starred') return !!it.starred;
     if (currentFilter.startsWith('room:')) return it.category === currentFilter.slice(5);
     return true;
   });
@@ -724,13 +732,17 @@ function tagsHTML(it) {
   const dt = dec==='keep'?`<span class="ptag ptag-keep">Keep</span>`:dec==='sell'?`<span class="ptag ptag-sell">Sell</span>`:`<span class="ptag ptag-undecided">—</span>`;
   const at = it.is_antique ? `<span class="ptag ptag-antique">Antique</span>` : '';
   const donat = it.donate ? `<span class="ptag ptag-donate">Donate</span>` : '';
+  const starTag = it.starred ? `<span class="ptag ptag-starred">★ Starred</span>` : '';
   const lt = it.location==='ca'?`<span class="ptag ptag-ca">CA</span>`:it.location==='london'?`<span class="ptag ptag-london">LDN</span>`:it.location==='dubai'?`<span class="ptag ptag-dubai">DXB</span>`:'';
-  return dt + lt + at + donat;
+  return dt + lt + at + donat + starTag;
 }
 
 function cardHTML(it, idx) {
+  const starIcon = it.starred ? '★' : '☆';
+  const starColor = it.starred ? '#FFD240' : 'rgba(255,255,255,.5)';
   return `<div class="photo-card" onclick="openDetail('${it.id}')">
     <div class="photo-num">${String(idx+1).padStart(3,'0')}</div>
+    <button class="star-btn" style="color:${starColor}" onclick="event.stopPropagation();toggleStar('${it.id}')">${starIcon}</button>
     <img src="${imgSrc(it)}" alt="${it.name}" loading="lazy">
     <div class="photo-overlay"></div>
     <div class="photo-body">
@@ -870,6 +882,7 @@ async function saveEdit() {
       notes: document.getElementById('e-notes').value.trim(),
       is_antique: activeItem.is_antique || false,
       donate: activeItem.donate || false,
+      starred: activeItem.starred || false,
       decision: activeItem.decision || 'undecided',
       location: activeItem.decision === 'keep' ? (activeItem.location || null) : null,
       img_url: imgUrl, updated_at: new Date().toISOString()
@@ -1179,6 +1192,7 @@ function getMultiFiltered() {
     for (const f of activeFilters) {
       if (f === 'antique' && !it.is_antique) return false;
       if (f === 'donate' && !it.donate) return false;
+      if (f === 'starred' && !it.starred) return false;
       if (f === 'keep' && it.decision !== 'keep') return false;
       if (f === 'sell' && it.decision !== 'sell') return false;
       if (f === 'undecided' && it.decision !== 'undecided') return false;
@@ -1191,6 +1205,27 @@ function getMultiFiltered() {
   });
 }
 
+
+
+// ── STAR ──
+async function toggleStar(id) {
+  const it = items.find(i => i.id === id);
+  if (!it) return;
+  it.starred = !it.starred;
+  try {
+    await supabase.from('catalog_items').update({starred: it.starred}).eq('id', id);
+  } catch(e) {}
+  render();
+}
+
+async function clearAllStars() {
+  if (!confirm('Remove stars from all items?')) return;
+  items.forEach(i => i.starred = false);
+  try {
+    await supabase.from('catalog_items').update({starred: false}).neq('id', '00000000-0000-0000-0000-000000000000');
+  } catch(e) {}
+  render();
+}
 
 // ── EXPORT ──
 function exportCSV() {
