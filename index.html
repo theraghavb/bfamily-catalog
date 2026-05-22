@@ -1002,18 +1002,31 @@ function exportPDF() {
 
 
 // ── SWIPE NAVIGATION ──
-let swipeStartX = 0, swipeStartY = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('detailSheet').addEventListener('touchmove', swipeMove, {passive: false});
+});
+
+let swipeStartX = 0, swipeStartY = 0, swipeLocked = null;
 
 function swipeStart(e) {
   swipeStartX = e.touches[0].clientX;
   swipeStartY = e.touches[0].clientY;
+  swipeLocked = null;
+}
+
+function swipeMove(e) {
+  if (swipeLocked === null) {
+    const dx = Math.abs(e.touches[0].clientX - swipeStartX);
+    const dy = Math.abs(e.touches[0].clientY - swipeStartY);
+    if (dx > 8 || dy > 8) swipeLocked = dx > dy ? 'h' : 'v';
+  }
+  if (swipeLocked === 'h') e.preventDefault();
 }
 
 function swipeEnd(e) {
   const dx = e.changedTouches[0].clientX - swipeStartX;
   const dy = e.changedTouches[0].clientY - swipeStartY;
-  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-    e.stopPropagation();
+  if (swipeLocked === 'h' && Math.abs(dx) > 40) {
     navigateDetail(dx < 0 ? 1 : -1);
   }
 }
