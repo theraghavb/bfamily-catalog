@@ -24,12 +24,12 @@
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
 }
-html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--black); color: var(--black); overscroll-behavior: none; }
+html, body { height: 100%; font-family: 'Inter', sans-serif; background: #3D2C18; color: var(--black); overscroll-behavior: none; }
 
 /* ── SPLASH ── */
 #splash {
   position: fixed; inset: 0; z-index: 1000;
-  background: var(--black);
+  background: #3D2C18;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 2rem;
   transition: opacity .8s ease;
@@ -108,7 +108,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   #splash { padding: 0; align-items: stretch; justify-content: stretch; }
   .splash-bg { background-position: right bottom; opacity: .9; filter: brightness(0.8) contrast(1.02); }
   .splash-vignette {
-    background: linear-gradient(to bottom, rgba(13,13,13,.55) 0%, rgba(13,13,13,.1) 30%, rgba(13,13,13,.02) 50%, rgba(13,13,13,.15) 68%, rgba(13,13,13,.88) 88%, rgba(13,13,13,.98) 100%);
+    background: 
+      linear-gradient(to right, rgba(90,68,42,.82) 0%, rgba(90,68,42,.5) 35%, rgba(90,68,42,.1) 65%, rgba(90,68,42,.0) 100%),
+      linear-gradient(to bottom, rgba(75,55,32,.35) 0%, rgba(75,55,32,.03) 30%, rgba(75,55,32,.0) 50%, rgba(75,55,32,.05) 75%, rgba(60,42,22,.25) 100%);
   }
   .splash-content {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -154,7 +156,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   font-size: 16px; color: var(--espresso); transition: background .15s;
 }
 .topbar-btn:hover { background: var(--light-gray); }
-.topbar-btn.primary { background: var(--black); color: var(--off-white); }
+.topbar-btn.primary { background: #3D2C18; color: var(--off-white); }
 
 /* ── STATS STRIP ── */
 .statsstrip {
@@ -184,7 +186,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   font-family: 'Inter', sans-serif; font-size: 12px; color: var(--mid-gray);
   cursor: pointer; white-space: nowrap; transition: all .15s;
 }
-.fpill.active { background: var(--black); color: var(--off-white); border-color: var(--black); }
+.fpill.active { background: #3D2C18; color: var(--off-white); border-color: var(--black); }
 .fpill.active.keep { background: var(--keep-fg); border-color: var(--keep-fg); }
 .fpill.active.sell { background: var(--sell-fg); border-color: var(--sell-fg); }
 
@@ -309,7 +311,7 @@ textarea.sheet-input { resize: none; height: 72px; }
 .sheet-actions { display: flex; gap: 8px; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--light-gray); }
 .sbtn { flex: 1; padding: 13px; border: 1px solid var(--light-gray); background: transparent; font-family: 'Inter', sans-serif; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--espresso); transition: all .15s; }
 .sbtn:hover { background: var(--cream); }
-.sbtn.primary { background: var(--black); color: var(--off-white); border-color: var(--black); flex: 2; }
+.sbtn.primary { background: #3D2C18; color: var(--off-white); border-color: var(--black); flex: 2; }
 .sbtn.danger { color: var(--sell-fg); border-color: var(--sell-bg); }
 .sbtn:disabled { opacity: .4; }
 
@@ -318,7 +320,7 @@ textarea.sheet-input { resize: none; height: 72px; }
 .upload-zone:active { background: var(--light-gray); }
 
 /* ── TOAST ── */
-.toast { position: fixed; bottom: calc(5rem + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: var(--black); color: var(--off-white); padding: 10px 20px; font-size: 12px; letter-spacing: .04em; z-index: 500; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; border-radius: 20px; }
+.toast { position: fixed; bottom: calc(5rem + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: #3D2C18; color: var(--off-white); padding: 10px 20px; font-size: 12px; letter-spacing: .04em; z-index: 500; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; border-radius: 20px; }
 .toast.show { opacity: 1; }
 
 /* ── EMPTY ── */
