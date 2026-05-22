@@ -247,6 +247,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #1C140A
 .ptag-london { background: rgba(238,237,245,.92); color: var(--london-fg); }
 .ptag-dubai { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
 .ptag-antique { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
+.ptag-donate { background: rgba(235,242,228,.92); color: #3D4A1A; }
 .photo-num { position: absolute; top: 7px; right: 7px; font-size: 8px; color: rgba(255,255,255,.5); letter-spacing: .04em; background: rgba(13,13,13,.25); padding: 1px 4px; }
 
 /* ── BOTTOM NAV ── */
@@ -410,6 +411,7 @@ textarea.sheet-input { resize: none; height: 72px; }
       <div class="sdsection">
         <div class="sdlabel">Tags</div>
         <div class="sditem" onclick="setFilter('antique',this)">Antique <span class="sdcount" id="d-c-antique">0</span></div>
+        <div class="sditem" onclick="setFilter('donate',this)">Donate <span class="sdcount" id="d-c-donate">0</span></div>
       </div>
       <div class="sddivider"></div>
       <div class="sdsection">
@@ -441,6 +443,8 @@ textarea.sheet-input { resize: none; height: 72px; }
       <button class="fpill" data-f="london" onclick="setFilter('london',this)">London</button>
       <button class="fpill" data-f="dubai" onclick="setFilter('dubai',this)">Dubai</button>
       <button class="fpill" data-f="antique" onclick="setFilter('antique',this)">Antique</button>
+      <button class="fpill" data-f="donate" onclick="setFilter('donate',this)">Donate</button>
+      <button class="fpill multi-toggle" id="m-multi-btn" onclick="toggleMultiModeMobile()" style="background:#F5F2EC;border:1px dashed #B4B2A9;color:#888780">Multi</button>
     </div>
     <div class="searchbar">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
@@ -634,6 +638,7 @@ function updateCounts() {
   const lon = items.filter(i=>i.location==='london').length;
   const dub = items.filter(i=>i.location==='dubai').length;
   const ant = items.filter(i=>i.is_antique).length;
+  const don = items.filter(i=>i.donate).length;
   // Update sidebar counts
   const setC = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   setC('d-c-all', items.length);
@@ -644,6 +649,7 @@ function updateCounts() {
   setC('d-c-london', lon);
   setC('d-c-dubai', dub);
   setC('d-c-antique', ant);
+  setC('d-c-donate', don);
   const statsHTML = `
     <div class="sstat"><div class="sstat-label">Total</div><div class="sstat-val">${items.length}</div></div>
     <div class="sstat"><div class="sstat-label">Keep</div><div class="sstat-val" style="color:var(--keep-fg)">${k}</div></div>
@@ -652,7 +658,8 @@ function updateCounts() {
     <div class="sstat"><div class="sstat-label">CA</div><div class="sstat-val" style="color:var(--ca-fg)">${ca}</div></div>
     <div class="sstat"><div class="sstat-label">LDN</div><div class="sstat-val" style="color:var(--london-fg)">${lon}</div></div>
     <div class="sstat"><div class="sstat-label">DXB</div><div class="sstat-val" style="color:var(--dubai-fg)">${dub}</div></div>
-    <div class="sstat"><div class="sstat-label">Antique</div><div class="sstat-val" style="color:var(--espresso)">${ant}</div></div>`;
+    <div class="sstat"><div class="sstat-label">Antique</div><div class="sstat-val" style="color:var(--espresso)">${ant}</div></div>
+    <div class="sstat"><div class="sstat-label">Donate</div><div class="sstat-val" style="color:#3D4A1A">${don}</div></div>`;
   ['m-statsstrip','d-statsstrip'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=statsHTML; });
   ['all','keep','sell','undecided','ca','london'].forEach(f => {
     const vals = {all:items.length,keep:k,sell:s,undecided:u,ca,london:lon,dubai:dub};
@@ -676,6 +683,7 @@ function getFiltered() {
     if (currentFilter === 'london') return it.location === 'london';
     if (currentFilter === 'dubai') return it.location === 'dubai';
     if (currentFilter === 'antique') return !!it.is_antique;
+    if (currentFilter === 'donate') return !!it.donate;
     if (currentFilter.startsWith('room:')) return it.category === currentFilter.slice(5);
     return true;
   });
@@ -715,8 +723,9 @@ function tagsHTML(it) {
   const dec = it.decision || 'undecided';
   const dt = dec==='keep'?`<span class="ptag ptag-keep">Keep</span>`:dec==='sell'?`<span class="ptag ptag-sell">Sell</span>`:`<span class="ptag ptag-undecided">—</span>`;
   const at = it.is_antique ? `<span class="ptag ptag-antique">Antique</span>` : '';
+  const donat = it.donate ? `<span class="ptag ptag-donate">Donate</span>` : '';
   const lt = it.location==='ca'?`<span class="ptag ptag-ca">CA</span>`:it.location==='london'?`<span class="ptag ptag-london">LDN</span>`:it.location==='dubai'?`<span class="ptag ptag-dubai">DXB</span>`:'';
-  return dt + lt + at;
+  return dt + lt + at + donat;
 }
 
 function cardHTML(it, idx) {
@@ -776,6 +785,7 @@ function openDetail(id) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="e-val" value="${esc(it.value||'')}" placeholder="$4,500"></div>
       <div><label class="sheet-form-label">Antique</label><div class="seg" style="margin-top:5px"><button class="seg-btn ${it.is_antique?'ak':''}" id="e-antique" onclick="editToggleAntique()">Antique</button></div></div>
+      <div><label class="sheet-form-label">Donate</label><div class="seg" style="margin-top:5px"><button class="seg-btn ${it.donate?'ak':''}" id="e-donate" onclick="editToggleDonate()" style="${it.donate?'background:#EEF2E8;color:#3D4A1A;border-color:#3D4A1A;':''}" >Donate</button></div></div>
     </div>
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="e-notes">${esc(it.notes||'')}</textarea>
@@ -819,6 +829,13 @@ function handleEditFile(e) {
   r.readAsDataURL(f);
 }
 
+function editToggleDonate() {
+  activeItem.donate = !activeItem.donate;
+  const btn = document.getElementById('e-donate');
+  btn.className = activeItem.donate ? 'seg-btn ak' : 'seg-btn';
+  btn.style.cssText = activeItem.donate ? 'background:#EEF2E8;color:#3D4A1A;border-color:#3D4A1A;' : '';
+}
+
 function editToggleAntique() {
   activeItem.is_antique = !activeItem.is_antique;
   document.getElementById('e-antique').className = activeItem.is_antique ? 'seg-btn ak' : 'seg-btn';
@@ -852,6 +869,7 @@ async function saveEdit() {
       value: document.getElementById('e-val').value.trim(),
       notes: document.getElementById('e-notes').value.trim(),
       is_antique: activeItem.is_antique || false,
+      donate: activeItem.donate || false,
       decision: activeItem.decision || 'undecided',
       location: activeItem.decision === 'keep' ? (activeItem.location || null) : null,
       img_url: imgUrl, updated_at: new Date().toISOString()
@@ -1100,6 +1118,16 @@ document.addEventListener('keydown', e => {
 // ── MULTI FILTER ──
 let multiMode = false;
 
+function toggleMultiModeMobile() {
+  toggleMultiMode();
+  const btn = document.getElementById('m-multi-btn');
+  if (btn) {
+    btn.style.background = multiMode ? '#0D0D0D' : '#F5F2EC';
+    btn.style.color = multiMode ? '#FAFAF8' : '#888780';
+    btn.style.border = multiMode ? '1px solid #0D0D0D' : '1px dashed #B4B2A9';
+  }
+}
+
 function toggleMultiMode() {
   multiMode = !multiMode;
   const btn = document.getElementById('multiBtn');
@@ -1150,6 +1178,7 @@ function getMultiFiltered() {
   return items.filter(it => {
     for (const f of activeFilters) {
       if (f === 'antique' && !it.is_antique) return false;
+      if (f === 'donate' && !it.donate) return false;
       if (f === 'keep' && it.decision !== 'keep') return false;
       if (f === 'sell' && it.decision !== 'sell') return false;
       if (f === 'undecided' && it.decision !== 'undecided') return false;
