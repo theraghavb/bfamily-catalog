@@ -80,11 +80,22 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #1C140A
 }
 .splash-input-wrap { width: 200px; margin-bottom: 8px; }
 .splash-input {
-  width: 100%; background: transparent !important; border: none;
-  border-bottom: 0.5px solid rgba(250,250,248,.25);
+  width: 100%; background: transparent !important; border: none !important;
+  border-bottom: 0.5px solid rgba(250,250,248,.25) !important;
   padding: 12px 0; text-align: center; font-size: 14px;
   letter-spacing: .25em; color: #FAFAF8; outline: none;
-  -webkit-appearance: none; box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  -webkit-autofill: none;
+}
+.splash-input:-webkit-autofill,
+.splash-input:-webkit-autofill:hover,
+.splash-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  -webkit-text-fill-color: #FAFAF8 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 .splash-input::placeholder { color: rgba(250,250,248,.18); font-size: 10px; letter-spacing: .14em; }
 .splash-enter {
