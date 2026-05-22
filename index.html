@@ -412,6 +412,11 @@ textarea.sheet-input { resize: none; height: 72px; }
         <div class="sditem" onclick="setFilter('antique',this)">Antique <span class="sdcount" id="d-c-antique">0</span></div>
       </div>
       <div class="sddivider"></div>
+      <div class="sdsection">
+        <div class="sdlabel" style="display:flex;justify-content:space-between;align-items:center;">Filters <button id="multiBtn" onclick="toggleMultiMode()" style="font-size:9px;padding:2px 8px;border:0.5px solid #D3D1C7;background:none;cursor:pointer;border-radius:10px;letter-spacing:.04em">Multi</button></div>
+        <div id="activeFiltersBar" style="display:none;padding:4px 16px 6px;flex-wrap:wrap;gap:4px"></div>
+      </div>
+      <div class="sddivider"></div>
       <div class="sdsection"><div class="sdlabel">Rooms</div><div id="d-roomnav"></div></div>
     </aside>
     <div class="main-desktop">
@@ -541,7 +546,7 @@ const APP_PASSWORD  = window.APP_PASSWORD  || '2575115752';
 const BUCKET = 'catalog-images';
 const isMobile = () => window.innerWidth < 768;
 
-let items = [], currentFilter = 'all', mobileView = 'grid', activeItem = null;
+let items = [], currentFilter = 'all', activeFilters = new Set(), mobileView = 'grid', activeItem = null;
 let addDec = 'undecided', addLoc = null, addAntique = false, pendingFile = null, editFile = null;
 
 // ── SPLASH ──
@@ -628,6 +633,16 @@ function updateCounts() {
   const lon = items.filter(i=>i.location==='london').length;
   const dub = items.filter(i=>i.location==='dubai').length;
   const ant = items.filter(i=>i.is_antique).length;
+  // Update sidebar counts
+  const setC = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  setC('d-c-all', items.length);
+  setC('d-c-keep', k);
+  setC('d-c-sell', s);
+  setC('d-c-undecided', u);
+  setC('d-c-ca', ca);
+  setC('d-c-london', lon);
+  setC('d-c-dubai', dub);
+  setC('d-c-antique', ant);
   const statsHTML = `
     <div class="sstat"><div class="sstat-label">Total</div><div class="sstat-val">${items.length}</div></div>
     <div class="sstat"><div class="sstat-label">Keep</div><div class="sstat-val" style="color:var(--keep-fg)">${k}</div></div>
@@ -646,6 +661,10 @@ function updateCounts() {
 
 // ── FILTER ──
 function getFiltered() {
+  if (multiMode && activeFilters.size > 0) {
+    const q = (document.getElementById(isMobile()?'m-search':'d-search')||{value:''}).value.toLowerCase();
+    return getMultiFiltered().filter(it => !q || [it.name,it.category,it.notes||''].join(' ').toLowerCase().includes(q));
+  }
   const q = (document.getElementById(isMobile()?'m-search':'d-search')||{value:''}).value.toLowerCase();
   return items.filter(it => {
     if (q && ![it.name,it.category,it.notes||''].join(' ').toLowerCase().includes(q)) return false;
@@ -662,6 +681,11 @@ function getFiltered() {
 }
 
 function setFilter(f, el) {
+  if (multiMode) {
+    setFilterMulti(f);
+    if (el) el.classList.toggle('active', activeFilters.has(f));
+    return;
+  }
   currentFilter = f;
   document.querySelectorAll('.fpill,.sditem').forEach(i => i.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -1061,6 +1085,67 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') navigateDetail(-1);
   if (e.key === 'Escape') closeSheet();
 });
+
+
+// ── MULTI FILTER ──
+let multiMode = false;
+
+function toggleMultiMode() {
+  multiMode = !multiMode;
+  const btn = document.getElementById('multiBtn');
+  if (btn) {
+    btn.style.background = multiMode ? '#0D0D0D' : 'none';
+    btn.style.color = multiMode ? '#FAFAF8' : '#0D0D0D';
+  }
+  if (!multiMode) {
+    activeFilters.clear();
+    document.getElementById('activeFiltersBar').style.display = 'none';
+  }
+  renderItems();
+}
+
+function setFilterMulti(f) {
+  if (!multiMode) return false;
+  if (activeFilters.has(f)) activeFilters.delete(f);
+  else activeFilters.add(f);
+  updateActiveFiltersBar();
+  renderItems();
+  return true;
+}
+
+function updateActiveFiltersBar() {
+  const bar = document.getElementById('activeFiltersBar');
+  if (!bar) return;
+  if (activeFilters.size === 0) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = [...activeFilters].map(f =>
+    `<span style="font-size:9px;padding:2px 7px;background:#0D0D0D;color:#FAFAF8;border-radius:10px;cursor:pointer" onclick="removeActiveFilter('${f}')">${f} ✕</span>`
+  ).join('');
+}
+
+function removeActiveFilter(f) {
+  activeFilters.delete(f);
+  updateActiveFiltersBar();
+  renderItems();
+}
+
+function getMultiFiltered() {
+  if (activeFilters.size === 0) return items;
+  return items.filter(it => {
+    for (const f of activeFilters) {
+      if (f === 'antique' && !it.is_antique) return false;
+      if (f === 'keep' && it.decision !== 'keep') return false;
+      if (f === 'sell' && it.decision !== 'sell') return false;
+      if (f === 'undecided' && it.decision !== 'undecided') return false;
+      if (f === 'london' && it.location !== 'london') return false;
+      if (f === 'dubai' && it.location !== 'dubai') return false;
+      if (f === 'ca' && it.location !== 'ca') return false;
+      if (f.startsWith('room:') && it.category !== f.slice(5)) return false;
+    }
+    return true;
+  });
+}
+
 
 // ── EXPORT ──
 function exportCSV() {
