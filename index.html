@@ -92,10 +92,16 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #1C140A
 }
 .splash-input:-webkit-autofill,
 .splash-input:-webkit-autofill:hover,
-.splash-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+.splash-input:-webkit-autofill:focus,
+.splash-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0px 9999px rgba(0,0,0,0) inset !important;
+  box-shadow: 0 0 0px 9999px rgba(0,0,0,0) inset !important;
   -webkit-text-fill-color: #FAFAF8 !important;
-  transition: background-color 5000s ease-in-out 0s;
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #FAFAF8 !important;
+  caret-color: #FAFAF8;
+  transition: background-color 99999s ease-in-out 0s !important;
 }
 .splash-input::placeholder { color: rgba(250,250,248,.18); font-size: 10px; letter-spacing: .14em; }
 .splash-enter {
