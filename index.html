@@ -985,8 +985,8 @@ function exportPDF() {
   const imgUrls = filtered.filter(it => it.image_url).map(it => it.image_url);
 
   const css = [
-    '* { box-sizing: border-box; margin: 0; padding: 0; }',
-    'body { font-family: Georgia, serif; background: #FAFAF8; color: #0D0D0D; }',
+    '* { box-sizing: border-box; margin: 0; padding: 0; } @page { margin: 14mm 10mm; } @media print { head, title { display: none; } }',
+    'body { font-family: Georgia, serif; background: #F5F2EC; color: #0D0D0D; }',
     '.cover { height: 100vh; background: #0D0D0D; display: flex; flex-direction: column; align-items: center; justify-content: center; page-break-after: always; }',
     '.cover h1 { font-size: 52px; color: #FAFAF8; letter-spacing: .1em; margin-bottom: 8px; font-weight: 400; }',
     '.cover p { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgba(250,250,248,.4); margin-bottom: 32px; font-family: sans-serif; }',
@@ -994,9 +994,9 @@ function exportPDF() {
     '.cover .cnt { font-size: 11px; color: rgba(250,250,248,.3); font-family: sans-serif; }',
     '.cover .addr { position: fixed; bottom: 32px; font-size: 10px; letter-spacing: .12em; color: rgba(250,250,248,.2); font-family: sans-serif; }',
     '.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 28px; }',
-    '.card { position: relative; background: #F5F2EC; border-radius: 3px; overflow: hidden; break-inside: avoid; }',
+    '.card { position: relative; background: #FAF8F4; border-radius: 4px; overflow: hidden; break-inside: avoid; border: 0.5px solid #E8E4DC; }',
     '.num { position: absolute; top: 6px; right: 6px; font-size: 8px; color: rgba(255,255,255,.7); background: rgba(0,0,0,.35); padding: 1px 4px; font-family: sans-serif; z-index: 2; }',
-    '.card img { width: 100%; height: 200px; object-fit: cover; display: block; }',
+    '.card img { width: 100%; height: 200px; object-fit: contain; display: block; background: #F5F2EC; }',
     '.no-img { width: 100%; height: 130px; background: #E8E4DC; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #888; font-family: sans-serif; }',
     '.info { padding: 8px 10px 10px; }',
     '.name { font-size: 15px; margin-bottom: 3px; line-height: 1.3; }',
