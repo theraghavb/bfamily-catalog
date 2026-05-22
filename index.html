@@ -682,8 +682,16 @@ function getFiltered() {
 
 function setFilter(f, el) {
   if (multiMode) {
-    setFilterMulti(f);
-    if (el) el.classList.toggle('active', activeFilters.has(f));
+    if (activeFilters.has(f)) activeFilters.delete(f);
+    else activeFilters.add(f);
+    updateActiveFiltersBar();
+    // Update active state on all sidebar items
+    document.querySelectorAll('.sditem').forEach(item => {
+      const onclick = item.getAttribute('onclick') || '';
+      const match = onclick.match(/setFilter\('([^']+)'/);
+      if (match) item.classList.toggle('active', activeFilters.has(match[1]));
+    });
+    render();
     return;
   }
   currentFilter = f;
@@ -1101,7 +1109,7 @@ function toggleMultiMode() {
     activeFilters.clear();
     document.getElementById('activeFiltersBar').style.display = 'none';
   }
-  renderItems();
+  render();
 }
 
 function setFilterMulti(f) {
@@ -1109,7 +1117,7 @@ function setFilterMulti(f) {
   if (activeFilters.has(f)) activeFilters.delete(f);
   else activeFilters.add(f);
   updateActiveFiltersBar();
-  renderItems();
+  render();
   return true;
 }
 
@@ -1126,7 +1134,7 @@ function updateActiveFiltersBar() {
 function removeActiveFilter(f) {
   activeFilters.delete(f);
   updateActiveFiltersBar();
-  renderItems();
+  render();
 }
 
 function getMultiFiltered() {
