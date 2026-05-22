@@ -1126,9 +1126,15 @@ function updateActiveFiltersBar() {
   if (!bar) return;
   if (activeFilters.size === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
-  bar.innerHTML = [...activeFilters].map(f =>
-    `<span style="font-size:9px;padding:2px 7px;background:#0D0D0D;color:#FAFAF8;border-radius:10px;cursor:pointer" onclick="removeActiveFilter('${f}')">${f} ✕</span>`
+  bar.style.flexWrap = 'wrap';
+  bar.style.gap = '4px';
+  bar.style.alignItems = 'center';
+  const matchCount = getMultiFiltered().length;
+  const pills = [...activeFilters].map(f =>
+    `<span style="font-size:9px;padding:2px 7px;background:#0D0D0D;color:#FAFAF8;border-radius:10px;cursor:pointer;letter-spacing:.03em" onclick="removeActiveFilter('${f}')">${f} ✕</span>`
   ).join('');
+  const count = `<span style="font-size:9px;color:#888780;margin-left:2px">${matchCount} item${matchCount !== 1 ? 's' : ''}</span>`;
+  bar.innerHTML = pills + count;
 }
 
 function removeActiveFilter(f) {
