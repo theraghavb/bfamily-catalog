@@ -248,6 +248,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #1C140A
 .ptag-dubai { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
 .ptag-antique { background: rgba(245,240,232,.92); color: var(--dubai-fg); }
 .ptag-donate { background: rgba(235,242,228,.92); color: #3D4A1A; }
+.ptag-packed { background: rgba(255,248,220,.92); color: #6B4E00; }
+.ptag-transit { background: rgba(220,235,255,.92); color: #1A3A6B; }
+.ptag-delivered { background: rgba(220,255,230,.92); color: #1A5C2A; }
+.ptag-sold { background: rgba(13,13,13,.85); color: #FAFAF8; }
+.ptag-storage { background: rgba(240,235,220,.92); color: #5C4A00; }
 .ptag-starred { background: rgba(255,210,80,.9); color: #5C4200; }
 .star-btn { position: absolute; top: 7px; left: 7px; z-index: 3; background: none; border: none; font-size: 18px; cursor: pointer; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); transition: transform .15s; }
 .star-btn:active { transform: scale(1.3); }
@@ -415,7 +420,13 @@ textarea.sheet-input { resize: none; height: 72px; }
         <div class="sdlabel">Tags</div>
         <div class="sditem" onclick="setFilter('antique',this)">Antique <span class="sdcount" id="d-c-antique">0</span></div>
         <div class="sditem" onclick="setFilter('donate',this)">Donate <span class="sdcount" id="d-c-donate">0</span></div>
-        <div class="sditem" style="display:flex;justify-content:space-between;align-items:center" onclick="setFilter('starred',this)">★ Starred <span style="display:flex;align-items:center;gap:6px"><span class="sdcount" id="d-c-starred">0</span><button onclick="event.stopPropagation();clearAllStars()" style="font-size:9px;padding:1px 6px;border:0.5px solid #D3D1C7;background:none;cursor:pointer;border-radius:8px;color:#888780">Clear</button></span></div>
+        <div class="sditem" onclick="setFilter('packed',this)">📦 Packed <span class="sdcount" id="d-c-packed">0</span></div>
+        <div class="sditem" onclick="setFilter('transit',this)">🚚 In Transit <span class="sdcount" id="d-c-transit">0</span></div>
+        <div class="sditem" onclick="setFilter('delivered',this)">✅ Delivered <span class="sdcount" id="d-c-delivered">0</span></div>
+      </div>
+      <div class="sddivider"></div>
+      <div class="sdsection"><div class="sdlabel">Starred</div>
+      <div class="sditem" style="display:flex;justify-content:space-between;align-items:center" onclick="setFilter('starred',this)">★ Starred <span style="display:flex;align-items:center;gap:6px"><span class="sdcount" id="d-c-starred">0</span><button onclick="event.stopPropagation();clearAllStars()" style="font-size:9px;padding:1px 6px;border:0.5px solid #D3D1C7;background:none;cursor:pointer;border-radius:8px;color:#888780">Clear</button></span></div>
       </div>
       <div class="sddivider"></div>
       <div class="sdsection">
@@ -448,7 +459,12 @@ textarea.sheet-input { resize: none; height: 72px; }
       <button class="fpill" data-f="dubai" onclick="setFilter('dubai',this)">Dubai</button>
       <button class="fpill" data-f="antique" onclick="setFilter('antique',this)">Antique</button>
       <button class="fpill" data-f="donate" onclick="setFilter('donate',this)">Donate</button>
+      <button class="fpill" data-f="sold" onclick="setFilter('sold',this)">Sold</button>
+      <button class="fpill" data-f="storage" onclick="setFilter('storage',this)">Storage</button>
       <button class="fpill" data-f="starred" onclick="setFilter('starred',this)">★ Starred</button>
+      <button class="fpill" data-f="packed" onclick="setFilter('packed',this)">📦 Packed</button>
+      <button class="fpill" data-f="transit" onclick="setFilter('transit',this)">🚚 Transit</button>
+      <button class="fpill" data-f="delivered" onclick="setFilter('delivered',this)">✅ Delivered</button>
       <button class="fpill multi-toggle" id="m-multi-btn" onclick="toggleMultiModeMobile()" style="background:#F5F2EC;border:1px dashed #B4B2A9;color:#888780">Multi</button>
     </div>
     <div class="searchbar">
@@ -499,27 +515,37 @@ textarea.sheet-input { resize: none; height: 72px; }
     <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Item name *</label><input class="sheet-input" id="add-name" placeholder="e.g. Side table"></div>
-      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="add-cat"><option value="">Select room…</option><option value="Backyard">Backyard</option>
-<option value="Breakfast Nook">Breakfast Nook</option>
-<option value="Courtyard">Courtyard</option>
-<option value="Engawa">Engawa</option>
-<option value="Entry">Entry</option>
-<option value="Entry Closet">Entry Closet</option>
-<option value="Entry Half Bath">Entry Half Bath</option>
-<option value="Family Room">Family Room</option>
-<option value="Formal Dining">Formal Dining</option>
-<option value="Formal Living">Formal Living</option>
-<option value="Guest House">Guest House</option>
-<option value="In-Law Suite">In-Law Suite</option>
-<option value="Library">Library</option>
-<option value="Primary Suite">Primary Suite</option>
-<option value="Princess Suite">Princess Suite</option>
-<option value="Tanuja's Office">Tanuja's Office</option></select></div>
+      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="add-cat"><option value="">Select room…</option><option value="Backyard">Backyard</option><option value="Bedroom 1 (Raghav's)">Bedroom 1 (Raghav's)</option><option value="Bedroom 2 (Ashwin's)">Bedroom 2 (Ashwin's)</option><option value="Breakfast Nook">Breakfast Nook</option><option value="Butler Pantry">Butler Pantry</option><option value="Courtyard">Courtyard</option><option value="Engawa">Engawa</option><option value="Entry">Entry</option><option value="Entry Closet">Entry Closet</option><option value="Entry Half Bath">Entry Half Bath</option><option value="Family Room">Family Room</option><option value="Formal Dining">Formal Dining</option><option value="Formal Living">Formal Living</option><option value="Garage">Garage</option><option value="Guest House">Guest House</option><option value="In-Law Suite">In-Law Suite</option><option value="Kitchen">Kitchen</option><option value="Library">Library</option><option value="Lower Level">Lower Level</option><option value="Mudroom">Mudroom</option><option value="Primary Suite">Primary Suite</option><option value="Princess Suite">Princess Suite</option><option value="Tanuja's Office">Tanuja's Office</option><option value="Wine Cellar">Wine Cellar</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Era</label><input class="sheet-input" id="add-era" placeholder="e.g. 1920s"></div>
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="add-val" placeholder="e.g. $3,500"></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="sheet-form-label">Invoice #</label><input class="sheet-input" id="e-invoice" value="${esc(it.invoice||'')}"></div>
+      <div><label class="sheet-form-label">PO #</label><input class="sheet-input" id="e-po" value="${esc(it.po_number||'')}"></div>
+    </div>
+    ${it.decision === 'sell' ? `
+    <div><label class="sheet-form-label">Sale Status</label>
+    <div class="seg">
+      <button class="seg-btn ${!it.sale_status||it.sale_status==='for_sale'?'active':''}" onclick="editSetSaleStatus('for_sale')">For Sale</button>
+      <button class="seg-btn ${it.sale_status==='sold'?'active':''}" onclick="editSetSaleStatus('sold')">Sold</button>
+      <button class="seg-btn ${it.sale_status==='storage'?'active':''}" onclick="editSetSaleStatus('storage')">Storage</button>
+    </div></div>
+    ${it.sale_status==='sold' ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="sheet-form-label">Sale Price</label><input class="sheet-input" id="e-sold-price" value="${esc(it.sold_price||'')}" placeholder="e.g. $2,500"></div>
+      <div><label class="sheet-form-label">Sold To</label><input class="sheet-input" id="e-sold-to" value="${esc(it.sold_to||'')}" placeholder="Buyer name"></div>
+    </div>` : ''}
+    ` : ''}
+    ${it.decision === 'keep' && it.location ? `
+    <div><label class="sheet-form-label">Shipping Status</label>
+    <div class="seg">
+      <button class="seg-btn ${!it.shipping||it.shipping==='none'?'active':''}" onclick="editSetShipping('none')">None</button>
+      <button class="seg-btn ${it.shipping==='packed'?'active':''}" onclick="editSetShipping('packed')">📦 Packed</button>
+      <button class="seg-btn ${it.shipping==='transit'?'active':''}" onclick="editSetShipping('transit')">🚚 Transit</button>
+      <button class="seg-btn ${it.shipping==='delivered'?'active':''}" onclick="editSetShipping('delivered')">✅ Delivered</button>
+    </div></div>` : ''}
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="add-notes" placeholder="Origin, condition, history…"></textarea>
     <label class="sheet-form-label">Antique</label>
@@ -645,6 +671,9 @@ function updateCounts() {
   const ant = items.filter(i=>i.is_antique).length;
   const don = items.filter(i=>i.donate).length;
   const starred = items.filter(i=>i.starred).length;
+  const packed = items.filter(i=>i.shipping==='packed').length;
+  const transit = items.filter(i=>i.shipping==='transit').length;
+  const delivered = items.filter(i=>i.shipping==='delivered').length;
   // Update sidebar counts
   const setC = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   setC('d-c-all', items.length);
@@ -657,6 +686,9 @@ function updateCounts() {
   setC('d-c-antique', ant);
   setC('d-c-donate', don);
   setC('d-c-starred', starred);
+  setC('d-c-packed', packed);
+  setC('d-c-transit', transit);
+  setC('d-c-delivered', delivered);
   const statsHTML = `
     <div class="sstat"><div class="sstat-label">Total</div><div class="sstat-val">${items.length}</div></div>
     <div class="sstat"><div class="sstat-label">Keep</div><div class="sstat-val" style="color:var(--keep-fg)">${k}</div></div>
@@ -691,7 +723,12 @@ function getFiltered() {
     if (currentFilter === 'dubai') return it.location === 'dubai';
     if (currentFilter === 'antique') return !!it.is_antique;
     if (currentFilter === 'donate') return !!it.donate;
+    if (currentFilter === 'sold') return it.sale_status === 'sold';
+    if (currentFilter === 'storage') return it.sale_status === 'storage';
     if (currentFilter === 'starred') return !!it.starred;
+    if (currentFilter === 'packed') return it.shipping === 'packed';
+    if (currentFilter === 'transit') return it.shipping === 'transit';
+    if (currentFilter === 'delivered') return it.shipping === 'delivered';
     if (currentFilter.startsWith('room:')) return it.category === currentFilter.slice(5);
     return true;
   });
@@ -733,8 +770,12 @@ function tagsHTML(it) {
   const at = it.is_antique ? `<span class="ptag ptag-antique">Antique</span>` : '';
   const donat = it.donate ? `<span class="ptag ptag-donate">Donate</span>` : '';
   const starTag = it.starred ? `<span class="ptag ptag-starred">★ Starred</span>` : '';
+  const saleTag = it.decision==='sell' && it.sale_status ? 
+    (it.sale_status==='sold' ? `<span class="ptag ptag-sold">Sold${it.sold_price?' · '+it.sold_price:''}</span>` :
+     it.sale_status==='storage' ? `<span class="ptag ptag-storage">Storage</span>` : '') : '';
+  const shipTag = it.shipping && it.shipping !== 'none' ? `<span class="ptag ptag-${it.shipping==='packed'?'packed':it.shipping==='transit'?'transit':'delivered'}">${it.shipping==='packed'?'📦 Packed':it.shipping==='transit'?'🚚 In Transit':'✅ Delivered'}</span>` : '';
   const lt = it.location==='ca'?`<span class="ptag ptag-ca">CA</span>`:it.location==='london'?`<span class="ptag ptag-london">LDN</span>`:it.location==='dubai'?`<span class="ptag ptag-dubai">DXB</span>`:'';
-  return dt + lt + at + donat + starTag;
+  return dt + lt + at + donat + starTag + shipTag + saleTag;
 }
 
 function cardHTML(it, idx) {
@@ -792,13 +833,38 @@ function openDetail(id) {
   document.getElementById('sheetFormBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Name</label><input class="sheet-input" id="e-name" value="${esc(it.name||'')}"></div>
-      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="e-cat"><option value="">Select room…</option><option value="Backyard">Backyard</option><option value="Breakfast Nook">Breakfast Nook</option><option value="Courtyard">Courtyard</option><option value="Engawa">Engawa</option><option value="Entry">Entry</option><option value="Entry Closet">Entry Closet</option><option value="Entry Half Bath">Entry Half Bath</option><option value="Family Room">Family Room</option><option value="Formal Dining">Formal Dining</option><option value="Formal Living">Formal Living</option><option value="Guest House">Guest House</option><option value="In-Law Suite">In-Law Suite</option><option value="Library">Library</option><option value="Primary Suite">Primary Suite</option><option value="Princess Suite">Princess Suite</option><option value="Tanuja's Office">Tanuja's Office</option></select></div>
+      <div><label class="sheet-form-label">Room</label><select class="sheet-input" id="e-cat"><option value="Backyard">Backyard</option><option value="Bedroom 1 (Raghav's)">Bedroom 1 (Raghav's)</option><option value="Bedroom 2 (Ashwin's)">Bedroom 2 (Ashwin's)</option><option value="Breakfast Nook">Breakfast Nook</option><option value="Butler Pantry">Butler Pantry</option><option value="Courtyard">Courtyard</option><option value="Engawa">Engawa</option><option value="Entry">Entry</option><option value="Entry Closet">Entry Closet</option><option value="Entry Half Bath">Entry Half Bath</option><option value="Family Room">Family Room</option><option value="Formal Dining">Formal Dining</option><option value="Formal Living">Formal Living</option><option value="Garage">Garage</option><option value="Guest House">Guest House</option><option value="In-Law Suite">In-Law Suite</option><option value="Kitchen">Kitchen</option><option value="Library">Library</option><option value="Lower Level">Lower Level</option><option value="Mudroom">Mudroom</option><option value="Primary Suite">Primary Suite</option><option value="Princess Suite">Princess Suite</option><option value="Tanuja's Office">Tanuja's Office</option><option value="Wine Cellar">Wine Cellar</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="e-val" value="${esc(it.value||'')}" placeholder="$4,500"></div>
       <div><label class="sheet-form-label">Antique</label><div class="seg" style="margin-top:5px"><button class="seg-btn ${it.is_antique?'ak':''}" id="e-antique" onclick="editToggleAntique()">Antique</button></div></div>
       <div><label class="sheet-form-label">Donate</label><div class="seg" style="margin-top:5px"><button class="seg-btn ${it.donate?'ak':''}" id="e-donate" onclick="editToggleDonate()" style="${it.donate?'background:#EEF2E8;color:#3D4A1A;border-color:#3D4A1A;':''}" >Donate</button></div></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="sheet-form-label">Invoice #</label><input class="sheet-input" id="e-invoice" value="${esc(it.invoice||'')}"></div>
+      <div><label class="sheet-form-label">PO #</label><input class="sheet-input" id="e-po" value="${esc(it.po_number||'')}"></div>
+    </div>
+    ${it.decision === 'sell' ? `
+    <div><label class="sheet-form-label">Sale Status</label>
+    <div class="seg">
+      <button class="seg-btn ${!it.sale_status||it.sale_status==='for_sale'?'active':''}" onclick="editSetSaleStatus('for_sale')">For Sale</button>
+      <button class="seg-btn ${it.sale_status==='sold'?'active':''}" onclick="editSetSaleStatus('sold')">Sold</button>
+      <button class="seg-btn ${it.sale_status==='storage'?'active':''}" onclick="editSetSaleStatus('storage')">Storage</button>
+    </div></div>
+    ${it.sale_status==='sold' ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="sheet-form-label">Sale Price</label><input class="sheet-input" id="e-sold-price" value="${esc(it.sold_price||'')}" placeholder="e.g. $2,500"></div>
+      <div><label class="sheet-form-label">Sold To</label><input class="sheet-input" id="e-sold-to" value="${esc(it.sold_to||'')}" placeholder="Buyer name"></div>
+    </div>` : ''}
+    ` : ''}
+    ${it.decision === 'keep' && it.location ? `
+    <div><label class="sheet-form-label">Shipping Status</label>
+    <div class="seg">
+      <button class="seg-btn ${!it.shipping||it.shipping==='none'?'active':''}" onclick="editSetShipping('none')">None</button>
+      <button class="seg-btn ${it.shipping==='packed'?'active':''}" onclick="editSetShipping('packed')">📦 Packed</button>
+      <button class="seg-btn ${it.shipping==='transit'?'active':''}" onclick="editSetShipping('transit')">🚚 Transit</button>
+      <button class="seg-btn ${it.shipping==='delivered'?'active':''}" onclick="editSetShipping('delivered')">✅ Delivered</button>
+    </div></div>` : ''}
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="e-notes">${esc(it.notes||'')}</textarea>
     <label class="sheet-form-label">Replace photo</label>
@@ -839,6 +905,22 @@ function handleEditFile(e) {
     document.getElementById('editPreview').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:120px;object-fit:cover;margin-top:6px">`;
   };
   r.readAsDataURL(f);
+}
+
+function editSetSaleStatus(val) {
+  activeItem.sale_status = val;
+  // Re-render the form to show/hide sold fields
+  openDetail(activeItem.id);
+}
+
+function editSetShipping(val) {
+  activeItem.shipping = val;
+  document.querySelectorAll('#sheetFormBody .seg .seg-btn').forEach(btn => {
+    const t = btn.textContent.trim();
+    const match = (val==='none' && t==='None') || (val==='packed' && t.includes('Packed')) || 
+                  (val==='transit' && t.includes('Transit')) || (val==='delivered' && t.includes('Delivered'));
+    btn.classList.toggle('active', match);
+  });
 }
 
 function editToggleDonate() {
@@ -883,6 +965,12 @@ async function saveEdit() {
       is_antique: activeItem.is_antique || false,
       donate: activeItem.donate || false,
       starred: activeItem.starred || false,
+      shipping: activeItem.shipping || 'none',
+      sale_status: activeItem.sale_status || null,
+      sold_price: document.getElementById('e-sold-price')?.value.trim() || null,
+      sold_to: document.getElementById('e-sold-to')?.value.trim() || null,
+      invoice: document.getElementById('e-invoice')?.value.trim() || null,
+      po_number: document.getElementById('e-po')?.value.trim() || null,
       decision: activeItem.decision || 'undecided',
       location: activeItem.decision === 'keep' ? (activeItem.location || null) : null,
       img_url: imgUrl, updated_at: new Date().toISOString()
@@ -1192,6 +1280,11 @@ function getMultiFiltered() {
     for (const f of activeFilters) {
       if (f === 'antique' && !it.is_antique) return false;
       if (f === 'donate' && !it.donate) return false;
+      if (f === 'sold' && it.sale_status !== 'sold') return false;
+      if (f === 'storage' && it.sale_status !== 'storage') return false;
+      if (f === 'packed' && it.shipping !== 'packed') return false;
+      if (f === 'transit' && it.shipping !== 'transit') return false;
+      if (f === 'delivered' && it.shipping !== 'delivered') return false;
       if (f === 'starred' && !it.starred) return false;
       if (f === 'keep' && it.decision !== 'keep') return false;
       if (f === 'sell' && it.decision !== 'sell') return false;
