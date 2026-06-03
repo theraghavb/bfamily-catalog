@@ -522,30 +522,9 @@ textarea.sheet-input { resize: none; height: 72px; }
       <div><label class="sheet-form-label">Est. value</label><input class="sheet-input" id="add-val" placeholder="e.g. $3,500"></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><label class="sheet-form-label">Invoice #</label><input class="sheet-input" id="e-invoice" value="${esc(it.invoice||'')}"></div>
-      <div><label class="sheet-form-label">PO #</label><input class="sheet-input" id="e-po" value="${esc(it.po_number||'')}"></div>
+      <div><label class="sheet-form-label">Invoice #</label><input class="sheet-input" id="add-invoice" placeholder="e.g. INV-001"></div>
+      <div><label class="sheet-form-label">PO #</label><input class="sheet-input" id="add-po" placeholder="e.g. PO-123"></div>
     </div>
-    ${it.decision === 'sell' ? `
-    <div><label class="sheet-form-label">Sale Status</label>
-    <div class="seg">
-      <button class="seg-btn ${!it.sale_status||it.sale_status==='for_sale'?'active':''}" onclick="editSetSaleStatus('for_sale')">For Sale</button>
-      <button class="seg-btn ${it.sale_status==='sold'?'active':''}" onclick="editSetSaleStatus('sold')">Sold</button>
-      <button class="seg-btn ${it.sale_status==='storage'?'active':''}" onclick="editSetSaleStatus('storage')">Storage</button>
-    </div></div>
-    ${it.sale_status==='sold' ? `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><label class="sheet-form-label">Sale Price</label><input class="sheet-input" id="e-sold-price" value="${esc(it.sold_price||'')}" placeholder="e.g. $2,500"></div>
-      <div><label class="sheet-form-label">Sold To</label><input class="sheet-input" id="e-sold-to" value="${esc(it.sold_to||'')}" placeholder="Buyer name"></div>
-    </div>` : ''}
-    ` : ''}
-    ${it.decision === 'keep' && it.location ? `
-    <div><label class="sheet-form-label">Shipping Status</label>
-    <div class="seg">
-      <button class="seg-btn ${!it.shipping||it.shipping==='none'?'active':''}" onclick="editSetShipping('none')">None</button>
-      <button class="seg-btn ${it.shipping==='packed'?'active':''}" onclick="editSetShipping('packed')">📦 Packed</button>
-      <button class="seg-btn ${it.shipping==='transit'?'active':''}" onclick="editSetShipping('transit')">🚚 Transit</button>
-      <button class="seg-btn ${it.shipping==='delivered'?'active':''}" onclick="editSetShipping('delivered')">✅ Delivered</button>
-    </div></div>` : ''}
     <label class="sheet-form-label">Notes</label>
     <textarea class="sheet-input" id="add-notes" placeholder="Origin, condition, history…"></textarea>
     <label class="sheet-form-label">Antique</label>
@@ -1007,6 +986,7 @@ function addToggleAntique() {
 
 function openAdd() {
   addDec = 'undecided'; addLoc = null; addAntique = false; pendingFile = null;
+  setTimeout(() => { const i = document.getElementById('add-invoice'); const p = document.getElementById('add-po'); if(i) i.value=''; if(p) p.value=''; }, 50);
   ['add-name','add-cat','add-era','add-val','add-notes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('uploadZone').innerHTML = '<div style="font-size:28px;margin-bottom:6px">↑</div>Tap to upload a photo';
   document.querySelectorAll('#addSheet .seg-btn').forEach(b => b.className = 'seg-btn');
@@ -1057,6 +1037,8 @@ async function saveNew() {
       notes: document.getElementById('add-notes').value.trim(),
       decision: addDec, location: addDec === 'keep' ? (addLoc || null) : null,
       is_antique: addAntique,
+      invoice: document.getElementById('add-invoice')?.value.trim() || null,
+      po_number: document.getElementById('add-po')?.value.trim() || null,
       img_url: imgUrl, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     };
     const result = await sbFetch('catalog_items', { method: 'POST', body: JSON.stringify(newItem) });
