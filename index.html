@@ -562,7 +562,7 @@ const BUCKET = 'catalog-images';
 const isMobile = () => window.innerWidth < 768;
 
 let items = [], currentFilter = 'all', activeFilters = new Set(), mobileView = 'grid', activeItem = null;
-let addDec = 'undecided', addLoc = null, addAntique = false, pendingFile = null, editFile = null;
+let addDec = 'undecided', addLoc = null, addAntique = false, pendingFile = null, editFile = null, activeRoom = null;
 
 // ── SPLASH ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -636,7 +636,7 @@ async function initApp() {
 function populateSidebar() {
   const rooms = [...new Set(items.map(i => i.category))].sort();
   const nav = document.getElementById('d-roomnav');
-  if (nav) nav.innerHTML = rooms.map(r => `<div class="sditem" onclick="setFilter('room:${r}',this)">${r} <span class="sdcount">${items.filter(i=>i.category===r).length}</span></div>`).join('');
+  if (nav) nav.innerHTML = rooms.map(r => `<div class="sditem" onclick="setFilter('room:'+this.dataset.room,this)" data-room="${r.replace(/"/g,'&quot;')}">${r} <span class="sdcount">${items.filter(i=>i.category===r).length}</span></div>`).join('');
 }
 
 // ── COUNTS ──
@@ -733,7 +733,18 @@ function setFilter(f, el) {
   render();
 }
 
+function openRoom(room) {
+  activeRoom = room;
+  render();
+}
+
+function closeRoom() {
+  activeRoom = null;
+  render();
+}
+
 function setMobileView(v, el) {
+  activeRoom = null;
   mobileView = v;
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -781,11 +792,40 @@ function render() {
   if (!list.length) { content.innerHTML = '<div class="empty-state"><p>No items match this filter</p></div>'; return; }
   const view = isMobile() ? mobileView : 'grid';
   if (view === 'rooms') {
+    const allItems = getFiltered();
     const byRoom = {};
-    list.forEach(it => { if (!byRoom[it.category]) byRoom[it.category]=[]; byRoom[it.category].push(it); });
-    content.innerHTML = Object.entries(byRoom).sort(([a],[b])=>a.localeCompare(b)).map(([room,ri]) =>
-      `<div class="room-group"><div class="room-label"><span>${room}</span><span>${ri.length}</span></div><div class="photo-grid">${ri.map((it,i)=>cardHTML(it,i)).join('')}</div></div>`
-    ).join('');
+    allItems.forEach(it => { if (!byRoom[it.category]) byRoom[it.category]=[]; byRoom[it.category].push(it); });
+    const sortedRooms = Object.entries(byRoom).sort(([a],[b])=>a.localeCompare(b));
+
+    if (!activeRoom) {
+      // Show room directory
+      content.innerHTML = `<div style="padding:0">` +
+        sortedRooms.map(([room, ri]) => {
+          const img = ri.find(i => i.img_url || i.img);
+          const imgSrcVal = img ? (img.img_url || img.img) : '';
+          return `<div onclick="openRoom('${room.replace(/'/g,"\'")}')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:0.5px solid var(--light-gray);cursor:pointer;background:var(--off-white)">
+            <div style="width:52px;height:52px;border-radius:4px;background:var(--cream);overflow:hidden;flex-shrink:0">
+              ${imgSrcVal ? `<img src="${imgSrcVal}" style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;background:var(--cream)"></div>'}
+            </div>
+            <div style="flex:1">
+              <div style="font-family:'EB Garamond',serif;font-size:16px;color:var(--black)">${room}</div>
+              <div style="font-size:12px;color:var(--mid-gray);margin-top:2px">${ri.length} item${ri.length!==1?'s':''}</div>
+            </div>
+            <div style="color:var(--mid-gray);font-size:18px">›</div>
+          </div>`;
+        }).join('') + `</div>`;
+    } else {
+      // Show items in active room
+      const roomItems = byRoom[activeRoom] || [];
+      content.innerHTML = `<div style="padding:0">
+        <div onclick="closeRoom()" style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:0.5px solid var(--light-gray);background:var(--off-white);cursor:pointer;position:sticky;top:0;z-index:10">
+          <span style="font-size:20px;color:var(--espresso)">‹</span>
+          <span style="font-family:'EB Garamond',serif;font-size:18px">${activeRoom}</span>
+          <span style="font-size:12px;color:var(--mid-gray);margin-left:4px">${roomItems.length} items</span>
+        </div>
+        <div class="photo-grid">${roomItems.map((it,i)=>cardHTML(it,i)).join('')}</div>
+      </div>`;
+    }
   } else if (view === 'list') {
     content.innerHTML = `<div style="padding:0">${list.map((it,i) => `
       <div onclick="openDetail('${it.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 1.25rem;border-bottom:1px solid var(--light-gray);cursor:pointer;background:var(--off-white)">
