@@ -1185,12 +1185,12 @@ async function exportPackSheet() {
       const resp = await fetch(url, { mode:'cors' });
       const blob = await resp.blob();
       const bmp = await createImageBitmap(blob);
-      const maxEdge = 400;
+      const maxEdge = 340;
       const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
       const w = Math.round(bmp.width*scale), h = Math.round(bmp.height*scale);
       const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
       cv.getContext('2d').drawImage(bmp, 0, 0, w, h);
-      const dataUrl = cv.toDataURL('image/jpeg', 0.82);
+      const dataUrl = cv.toDataURL('image/jpeg', 0.78);
       cache[url] = dataUrl;
       return dataUrl;
     } catch(e) { cache[url] = null; return null; }
@@ -1246,7 +1246,11 @@ async function exportPackSheet() {
   }).join('');
 
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>B.Family — Packing Pull Sheet</title>
+  if (!win) { document.body.removeChild(ov); alert('Please allow pop-ups for this site, then tap Pack again.'); return; }
+
+  document.getElementById('packProg').textContent = 'Rendering ' + pages.length + ' pages…';
+
+  const head = `<!DOCTYPE html><html><head><title>B.Family — Packing Pull Sheet</title>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
   <style>
     @page { size: letter portrait; margin: 0.5in; }
@@ -1258,13 +1262,36 @@ async function exportPackSheet() {
     .pack-room { font-family:'EB Garamond',Georgia,serif; font-size:20px; color:#1C140A; }
     .pack-brand { font-size:9px; letter-spacing:.1em; color:#5A5246; }
     .pack-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(3,1fr); gap:14px; height:9.3in; }
-    @media print { .pack-grid { height:9.3in; } }
-  </style></head><body>${pagesHTML}
-  <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
-  </body></html>`);
+    .print-bar { position:fixed; top:0; left:0; right:0; background:#1C140A; color:#fff; font-family:sans-serif; font-size:13px; padding:10px; text-align:center; z-index:99; }
+    .print-bar button { background:#fff; color:#1C140A; border:none; padding:5px 16px; border-radius:4px; margin-left:10px; cursor:pointer; font-weight:600; }
+    @media print { .print-bar { display:none; } }
+  </style></head><body>
+  <div class="print-bar">Pull Sheet ready — ${pool.length} items, ${pages.length} pages.<button onclick="window.print()">Print / Save PDF</button></div>
+  <div style="height:42px"></div>`;
+
+  // Write head + body in one go (string is large but images are downscaled)
+  win.document.open();
+  win.document.write(head + pagesHTML + '</body></html>');
   win.document.close();
 
-  document.body.removeChild(ov);
+  // Wait for the child document's images to finish decoding, then auto-open print
+  const waitAndPrint = () => {
+    try {
+      const imgs = win.document.images;
+      let allLoaded = true;
+      for (let i=0;i<imgs.length;i++){ if (!imgs[i].complete) { allLoaded = false; break; } }
+      if (allLoaded) {
+        document.body.removeChild(ov);
+        setTimeout(() => { try { win.focus(); win.print(); } catch(e){} }, 300);
+      } else {
+        setTimeout(waitAndPrint, 250);
+      }
+    } catch(e) {
+      // Cross-window access issue — just drop overlay and let user use the button
+      if (document.body.contains(ov)) document.body.removeChild(ov);
+    }
+  };
+  setTimeout(waitAndPrint, 400);
 }
 
 function exportPDF() {
