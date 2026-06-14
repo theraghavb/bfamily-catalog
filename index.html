@@ -845,10 +845,18 @@ function render() {
 function openDetail(id) {
   const it = items.find(i => i.id === id); if (!it) return;
   activeItem = {...it}; editFile = null;
+  renderDetailForm();
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.getElementById('detailSheet').classList.add('open');
+  updateNavCounter();
+}
+
+function renderDetailForm() {
+  const it = activeItem;
+  const dec = it.decision || 'undecided';
   document.getElementById('sheetImg').src = imgSrc(it);
   document.getElementById('sheetTitle').textContent = it.name;
   document.getElementById('sheetRoom').textContent = it.category || '';
-  const dec = it.decision || 'undecided';
   document.getElementById('sheetFormBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><label class="sheet-form-label">Name</label><input class="sheet-input" id="e-name" value="${esc(it.name||'')}"></div>
@@ -910,9 +918,6 @@ function openDetail(id) {
       <button class="sbtn primary" id="editSaveBtn" onclick="saveEdit()">Save</button>
     </div>`;
   const catEl = document.getElementById('e-cat'); if(catEl) catEl.value = it.category || '';
-  document.getElementById('sheetOverlay').classList.add('open');
-  updateNavCounter();
-  document.getElementById('detailSheet').classList.add('open');
 }
 
 function handleEditFile(e) {
@@ -927,9 +932,9 @@ function handleEditFile(e) {
 }
 
 function editSetSaleStatus(val) {
+  preserveEditFields();
   activeItem.sale_status = val;
-  // Re-render the form to show/hide sold fields
-  openDetail(activeItem.id);
+  renderDetailForm();
 }
 
 function editSetShipping(val) {
@@ -954,20 +959,31 @@ function editToggleAntique() {
   document.getElementById('e-antique').className = activeItem.is_antique ? 'seg-btn ak' : 'seg-btn';
 }
 
-function editSetDec(d) {
-  activeItem.decision = d;
-  document.querySelectorAll('#detailSheet .seg:first-of-type .seg-btn').forEach(b => b.className = 'seg-btn');
-  event.target.className = `seg-btn ${d==='keep'?'ak':d==='sell'?'as':'au'}`;
-  document.getElementById('editLocWrap').style.opacity = d === 'keep' ? 1 : .4;
+function preserveEditFields() {
+  const g = id => document.getElementById(id);
+  const nm = g('e-name'); if(nm) activeItem.name = nm.value;
+  const nt = g('e-notes'); if(nt) activeItem.notes = nt.value;
+  const inv = g('e-invoice'); if(inv) activeItem.invoice = inv.value;
+  const po = g('e-po'); if(po) activeItem.po_number = po.value;
+  const sp = g('e-sold-price'); if(sp) activeItem.sold_price = sp.value;
+  const st = g('e-sold-to'); if(st) activeItem.sold_to = st.value;
+  const ev = g('e-val'); if(ev) activeItem.value = ev.value;
+  const ec = g('e-cat'); if(ec) activeItem.category = ec.value;
 }
 
+function editSetDec(d) {
+  preserveEditFields();
+  activeItem.decision = d;
+  if (d !== 'sell') activeItem.sale_status = activeItem.sale_status; // keep
+  if (d !== 'keep') { /* shipping stays but won't show */ }
+  renderDetailForm();
+}
+
+
 function editSetLoc(l) {
+  preserveEditFields();
   activeItem.location = activeItem.location === l ? null : l;
-  document.querySelectorAll('#editLocWrap .seg-btn').forEach(b => b.className = 'seg-btn');
-  if (activeItem.location) {
-    const map = {ca:'aca',london:'alon',dubai:'adub'};
-    event.target.className = `seg-btn ${map[activeItem.location]}`;
-  }
+  renderDetailForm();
 }
 
 async function saveEdit() {
